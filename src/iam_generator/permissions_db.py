@@ -185,6 +185,65 @@ class IAMPermissionsDatabase:
                     description="Describe security groups",
                     resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
                 ),
+                "create-security-group": CommandPermissions(
+                    service="ec2",
+                    action="create-security-group",
+                    permissions=[
+                        IAMPermission(action="ec2:CreateSecurityGroup", resource="*"),
+                        IAMPermission(action="ec2:DescribeVpcs", resource="*"),
+                    ],
+                    description="Create security group",
+                    resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
+                ),
+                "delete-security-group": CommandPermissions(
+                    service="ec2",
+                    action="delete-security-group",
+                    permissions=[
+                        IAMPermission(action="ec2:DeleteSecurityGroup", resource="*"),
+                    ],
+                    description="Delete security group",
+                    resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
+                ),
+                "authorize-security-group-ingress": CommandPermissions(
+                    service="ec2",
+                    action="authorize-security-group-ingress",
+                    permissions=[
+                        IAMPermission(action="ec2:AuthorizeSecurityGroupIngress", resource="*"),
+                        IAMPermission(action="ec2:DescribeSecurityGroups", resource="*"),
+                    ],
+                    description="Authorize security group ingress rules",
+                    resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
+                ),
+                "authorize-security-group-egress": CommandPermissions(
+                    service="ec2",
+                    action="authorize-security-group-egress",
+                    permissions=[
+                        IAMPermission(action="ec2:AuthorizeSecurityGroupEgress", resource="*"),
+                        IAMPermission(action="ec2:DescribeSecurityGroups", resource="*"),
+                    ],
+                    description="Authorize security group egress rules",
+                    resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
+                ),
+                "revoke-security-group-ingress": CommandPermissions(
+                    service="ec2",
+                    action="revoke-security-group-ingress",
+                    permissions=[
+                        IAMPermission(action="ec2:RevokeSecurityGroupIngress", resource="*"),
+                        IAMPermission(action="ec2:DescribeSecurityGroups", resource="*"),
+                    ],
+                    description="Revoke security group ingress rules",
+                    resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
+                ),
+                "revoke-security-group-egress": CommandPermissions(
+                    service="ec2",
+                    action="revoke-security-group-egress",
+                    permissions=[
+                        IAMPermission(action="ec2:RevokeSecurityGroupEgress", resource="*"),
+                        IAMPermission(action="ec2:DescribeSecurityGroups", resource="*"),
+                    ],
+                    description="Revoke security group egress rules",
+                    resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
+                ),
             },
             "iam": {
                 "list-users": CommandPermissions(
