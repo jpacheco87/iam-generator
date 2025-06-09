@@ -217,8 +217,8 @@ When contributing to this project:
 - **Repository**: [AWS CLI IAM Permissions Analyzer](https://github.com/jpacheco87/iam-generator)
 - **Documentation**: See `docs/` directory for detailed guides
 - **Issues**: Report bugs and feature requests via GitHub Issues
-- **Docker**: See `DOCKER.md` for containerization details
-- **Frontend**: See `FRONTEND_GUIDE.md` for UI development
+- **Docker**: See [DOCKER.md](DOCKER.md) for containerization details
+- **Frontend**: See [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) for UI development
 
 ## License
 
