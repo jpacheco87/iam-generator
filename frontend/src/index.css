@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Force Tailwind to include AWS color classes:
+  bg-aws-gray-100 bg-aws-gray-200 bg-aws-gray-300 bg-aws-gray-400 bg-aws-gray-500 
+  bg-aws-gray-600 bg-aws-gray-700 bg-aws-gray-800 bg-aws-gray-900 bg-aws-gray-50
+  text-aws-gray-100 text-aws-gray-200 text-aws-gray-300 text-aws-gray-400 text-aws-gray-500 
+  text-aws-gray-600 text-aws-gray-700 text-aws-gray-800 text-aws-gray-900 text-aws-gray-50
+  border-aws-gray-100 border-aws-gray-200 border-aws-gray-300 border-aws-gray-400 border-aws-gray-500 
+  border-aws-gray-600 border-aws-gray-700 border-aws-gray-800 border-aws-gray-900 border-aws-gray-50
+  bg-aws-orange bg-aws-blue bg-aws-blue-light text-aws-orange text-aws-blue text-aws-blue-light
+  border-aws-orange border-aws-blue border-aws-blue-light hover:bg-aws-gray-100 hover:bg-aws-gray-200
+  hover:bg-aws-gray-600 hover:text-aws-orange hover:text-aws-blue focus:border-aws-blue focus:ring-aws-blue
+  data-[state=active]:text-aws-blue data-[state=active]:text-aws-orange data-[state=active]:border-aws-blue
+*/
+
+@layer base {
+    :root {
+        /* AWS-inspired color palette */
+        --background: 210 20% 97%;
+        /* Lighter gray, closer to AWS console body */
+        --foreground: 213 31% 17%;
+        /* Darker gray for text, closer to AWS console text */
+        --card: 0 0% 100%;
+        --card-foreground: 213 31% 17%;
+        /* Darker text for cards */
+        --popover: 0 0% 100%;
+        --popover-foreground: 213 31% 17%;
+        --primary: 201 96% 32%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 210 40% 98%;
+        --secondary-foreground: 213 31% 12%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 213 19% 46%;
+        --accent: 210 40% 96%;
+        --accent-foreground: 213 31% 12%;
+        --destructive: 0 72% 51%;
+        /* AWS Console Error Red */
+        --destructive-foreground: 0 0% 100%;
+        --border: 214 32% 93%;
+        /* Lighter border */
+        --input: 214 32% 91%;
+        --ring: 201 96% 32%;
+        --radius: 0.25rem;
+        /* AWS uses smaller border radius */
+
+        /* AWS specific colors */
+        --aws-orange: 28 100% 53%;
+        --aws-orange-foreground: 0 0% 100%;
+        --aws-blue: 201 96% 32%;
+        --aws-blue-light: 201 96% 94%;
+        --aws-gray-50: 210 20% 98%;
+        /* Added for very light backgrounds */
+        --aws-gray-100: 210 20% 97%;
+        /* Adjusted */
+        --aws-gray-200: 214 32% 93%;
+        /* Adjusted */
+        --aws-gray-300: 213 27% 84%;
+        --aws-gray-400: 213 19% 65%;
+        --aws-gray-500: 213 19% 46%;
+        --aws-gray-600: 213 25% 38%;
+        /* Added for darker UI elements */
+        --aws-gray-700: 213 31% 27%;
+        --aws-gray-800: 213 31% 20%;
+        /* Added for very dark UI elements */
+        --aws-gray-900: 213 31% 17%;
+        /* Adjusted for main text */
+
+        --chart-1: 28 100% 53%;
+        --chart-2: 201 96% 32%;
+        --chart-3: 142 71% 45%;
+        --chart-4: 262 83% 58%;
+        --chart-5: 346 87% 43%;
+    }
+
+    .dark {
+        --background: 213 31% 12%;
+        /* Darker background for AWS dark mode */
+        --foreground: 210 20% 90%;
+        /* Lighter text for AWS dark mode */
+        --card: 213 31% 15%;
+        /* Darker card for AWS dark mode */
+        --card-foreground: 210 20% 90%;
+        --popover: 213 31% 15%;
+        --popover-foreground: 210 20% 90%;
+        --primary: 201 96% 50%;
+        --primary-foreground: 213 31% 12%;
+        --secondary: 213 31% 20%;
+        --secondary-foreground: 210 40% 98%;
+        --muted: 213 31% 20%;
+        --muted-foreground: 213 19% 65%;
+        --accent: 213 31% 20%;
+        --accent-foreground: 210 40% 98%;
+        --destructive: 0 72% 51%;
+        /* Consistent error red */
+        --destructive-foreground: 0 0% 100%;
+        --border: 213 31% 25%;
+        /* Darker border for dark mode */
+        --input: 213 31% 25%;
+        --ring: 201 96% 50%;
+
+        /* AWS dark colors */
+        --aws-orange: 28 100% 60%;
+        --aws-orange-foreground: 213 31% 12%;
+        --aws-blue: 201 96% 50%;
+        --aws-blue-light: 201 96% 20%;
+        /* Darker blue light for dark mode */
+        --aws-gray-50: 213 31% 10%;
+        --aws-gray-100: 213 31% 12%;
+        --aws-gray-200: 213 31% 15%;
+        --aws-gray-300: 213 19% 25%;
+        --aws-gray-400: 213 19% 35%;
+        --aws-gray-500: 213 19% 65%;
+        --aws-gray-600: 213 20% 75%;
+        --aws-gray-700: 210 20% 85%;
+        --aws-gray-800: 210 20% 90%;
+        --aws-gray-900: 210 20% 97%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-family: "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-semibold text-aws-gray-900;
+        /* Use darker gray for headings */
+    }
+
+    /* Ensure dark mode headings are also updated */
+    .dark h1,
+    .dark h2,
+    .dark h3,
+    .dark h4,
+    .dark h5,
+    .dark h6 {
+        @apply text-aws-gray-100;
+        /* Lighter gray for headings in dark mode */
+    }
+}
+
+@layer components {
+    .aws-orange {
+        @apply bg-[hsl(var(--aws-orange))] text-[hsl(var(--aws-orange-foreground))];
+    }
+
+    .aws-blue {
+        @apply bg-[hsl(var(--aws-blue))] text-white;
+    }
+
+    .aws-blue-light {
+        @apply bg-[hsl(var(--aws-blue-light))] text-[hsl(var(--aws-blue))];
+    }
+
+    .aws-surface {
+        @apply bg-card border border-[hsl(var(--border))] rounded-lg shadow-sm;
+        /* Use card and border variables */
+    }
+
+    .aws-surface-raised {
+        @apply bg-card border border-[hsl(var(--border))] rounded-lg shadow-md;
+        /* Use card and border variables */
+    }
+
+    .aws-text-primary {
+        @apply text-foreground;
+        /* Use foreground for primary text */
+    }
+
+    .aws-text-secondary {
+        @apply text-aws-gray-500;
+        /* Keep for specific secondary text styling if needed, or switch to muted-foreground */
+    }
+
+    .aws-gradient {
+        background: linear-gradient(135deg, hsl(var(--aws-blue)) 0%, hsl(var(--aws-orange)) 100%);
+    }
+}

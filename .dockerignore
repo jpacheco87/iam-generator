@@ -1,0 +1,77 @@
+# Git and development files
+.git
+.gitignore
+.github
+*.md
+README*
+
+# Python cache and build artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+.coverage
+.mypy_cache
+.tox
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Data and cache directories
+data/
+cache/
+tmp/
+
+# Frontend build artifacts (for backend build)
+frontend/node_modules/
+frontend/dist/
+frontend/.next/
+
+# Docker files (to avoid recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Testing and development
+tests/
+*.test.py
+test_*
+
+# Documentation
+docs/
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# AWS credentials (should never be in images)
+.aws/
+aws-credentials
+
+# Temporary files
+*.tmp
+*.temp

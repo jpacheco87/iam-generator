@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Backend API Server (Development Mode)
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: iam-generator-backend-dev
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+      - PYTHONPATH=/app/src
+      - LOG_LEVEL=debug
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source code for hot reloading
+      - ./src:/app/src
+      - ./backend_server.py:/app/backend_server.py
+      - ./tests:/app/tests
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Optional: Mount AWS credentials for local development
+      # - ~/.aws:/home/appuser/.aws:ro
+    networks:
+      - iam-generator-network
+    command: ["dev"]  # Use development mode
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React App (Development Mode)
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: builder
+    container_name: iam-generator-frontend-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reloading
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js
+      - ./frontend/postcss.config.js:/app/postcss.config.js
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    depends_on:
+      backend-dev:
+        condition: service_healthy
+    networks:
+      - iam-generator-network
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # CLI Container for testing
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: iam-generator-cli
+    environment:
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Optional: Mount AWS credentials
+      # - ~/.aws:/home/appuser/.aws:ro
+    networks:
+      - iam-generator-network
+    profiles:
+      - cli  # Only start when explicitly requested
+    command: ["cli", "--help"]
+
+networks:
+  iam-generator-network:
+    driver: bridge
+    name: iam-generator-dev-network
+
+volumes:
+  iam-data:
+    name: iam-generator-dev-data
+  iam-logs:
+    name: iam-generator-dev-logs
