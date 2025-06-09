@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2025-06-09
+
 ### Added
 - Comprehensive changelog documentation
 - Enhanced documentation for deployment and frontend development
@@ -15,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EC2 security group commands now properly recognized in batch analysis
 - Resolved warnings for `create-security-group` and `authorize-security-group-ingress` commands
 
-## [2.0.0] - 2024-12-XX
+## [2.0.0] - 2025-06-09
 
 ### Added
 - **Docker Support**: Full containerization with Docker Compose setup
@@ -69,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Performance**: Optimized permission lookups and database queries
 - **Documentation**: Comprehensive guides for deployment and development
 
-## [1.5.0] - 2024-10-XX
+## [1.5.0] - 2025-06-09
 
 ### Added
 - **Security Group Commands**: Complete EC2 security group management
@@ -89,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better resource ARN pattern matching
 - Enhanced error messages for unsupported commands
 
-## [1.4.0] - 2024-09-XX
+## [1.4.0] - 2025-06-09
 
 ### Added
 - **Cognito Services**: Identity and User Pool management
@@ -108,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Session Manager functionality
   - Command execution capabilities
 
-## [1.3.0] - 2024-08-XX
+## [1.3.0] - 2025-06-09
 
 ### Added
 - **EventBridge**: Event-driven architecture support
@@ -127,7 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Workflow creation and execution
   - State machine monitoring
 
-## [1.2.0] - 2024-07-XX
+## [1.2.0] - 2025-06-09
 
 ### Added
 - **Container Services**: Complete containerization support
@@ -146,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **DynamoDB**: NoSQL operations
   - **ElastiCache**: In-memory caching
 
-## [1.1.0] - 2024-06-XX
+## [1.1.0] - 2025-06-09
 
 ### Added
 - **Core AWS Services**: Foundation service support
@@ -167,7 +169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Auto Scaling**: Dynamic scaling capabilities
 - **Route53**: DNS management
 
-## [1.0.0] - 2024-05-XX
+## [1.0.0] - 2025-06-09
 
 ### Added
 - **Initial Release**: Core IAM permissions analyzer
@@ -212,7 +214,7 @@ When contributing to this project:
 
 ## Support and Documentation
 
-- **Repository**: [AWS CLI IAM Permissions Analyzer](https://github.com/your-org/iam-generator)
+- **Repository**: [AWS CLI IAM Permissions Analyzer](https://github.com/jpacheco87/iam-generator)
 - **Documentation**: See `docs/` directory for detailed guides
 - **Issues**: Report bugs and feature requests via GitHub Issues
 - **Docker**: See `DOCKER.md` for containerization details
