@@ -108,18 +108,24 @@ Since all major roadmap services have been implemented, consider these additiona
 
 ### Usage Examples
 ```bash
-# Analyze individual commands
-python -m iam_generator.main analyze dynamodb create-table
-python -m iam_generator.main analyze cloudformation create-stack
+# Analyze individual commands (from project root)
+PYTHONPATH=backend python -m iam_generator.main analyze dynamodb create-table
+PYTHONPATH=backend python -m iam_generator.main analyze cloudformation create-stack
 
 # Generate roles for specific use cases
-python -m iam_generator.main generate-role ecs run-task lambda invoke --trust-policy ecs
+PYTHONPATH=backend python -m iam_generator.main generate-role ecs run-task lambda invoke --trust-policy ecs
 
 # Batch analyze multiple commands
-python -m iam_generator.main batch-analyze commands.txt
+PYTHONPATH=backend python -m iam_generator.main batch-analyze commands.txt
+
+# Or with installed package
+cd backend && pip install -e . && cd ..
+iam-generator analyze dynamodb create-table
+iam-generator generate-role ecs run-task lambda invoke --trust-policy ecs
+iam-generator batch-analyze commands.txt
 
 # Future enhanced commands (roadmap)
-python -m iam_generator.main optimize-policy existing-policy.json
-python -m iam_generator.main validate-policy --compliance pci
-python -m iam_generator.main audit-permissions --report-format html
+iam-generator optimize-policy existing-policy.json
+iam-generator validate-policy --compliance pci
+iam-generator audit-permissions --report-format html
 ```

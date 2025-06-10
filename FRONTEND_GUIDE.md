@@ -186,17 +186,22 @@ curl -X POST "http://localhost:8000/service-summary" \
 
 The original CLI tool still works as before:
 ```bash
-# Analyze commands
-iam-generator analyze s3 ls s3://my-bucket
-iam-generator analyze ec2 describe-instances
+# Analyze commands (from project root)
+PYTHONPATH=backend python -m iam_generator.main analyze s3 ls s3://my-bucket
+PYTHONPATH=backend python -m iam_generator.main analyze ec2 describe-instances
 
 # Generate roles
-iam-generator generate-role --role-name MyRole s3 ls s3://my-bucket
-iam-generator generate-role --trust-policy lambda lambda invoke --function-name func
+PYTHONPATH=backend python -m iam_generator.main generate-role --role-name MyRole s3 ls s3://my-bucket
+PYTHONPATH=backend python -m iam_generator.main generate-role --trust-policy lambda lambda invoke --function-name func
 
 # Batch analysis
 echo "s3 ls s3://bucket1\nec2 describe-instances" > commands.txt
-iam-generator batch-analyze commands.txt
+PYTHONPATH=backend python -m iam_generator.main batch-analyze commands.txt
+
+# Or with installed package
+cd backend && pip install -e . && cd ..
+iam-generator analyze s3 ls s3://my-bucket
+iam-generator generate-role --role-name MyRole s3 ls s3://my-bucket
 ```
 
 ## Key Features to Explore

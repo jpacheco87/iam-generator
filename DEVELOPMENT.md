@@ -37,7 +37,7 @@ iam_generator/
 
 ### CLI Usage
 ```bash
-# Run the CLI tool
+# Run the CLI tool from project root (recommended)
 PYTHONPATH=backend python -m iam_generator.main --help
 
 # Analyze a command
@@ -45,6 +45,12 @@ PYTHONPATH=backend python -m iam_generator.main analyze s3 ls
 
 # Generate a role
 PYTHONPATH=backend python -m iam_generator.main generate-role s3 ls --role-name S3ReadRole
+
+# Alternative: Install as package first
+cd backend && pip install -e .
+iam-generator --help
+iam-generator analyze s3 ls
+iam-generator generate-role s3 ls --role-name S3ReadRole
 ```
 
 ### API Server

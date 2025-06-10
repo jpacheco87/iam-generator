@@ -26,8 +26,13 @@ This project provides three complementary interfaces:
 
 ### 1. Command Line Interface (CLI)
 ```bash
-# Direct CLI usage for automation and scripting
-python -m iam_generator.main analyze s3 ls s3://my-bucket
+# Direct CLI usage for automation and scripting (requires PYTHONPATH)
+PYTHONPATH=backend python -m iam_generator.main analyze s3 ls s3://my-bucket
+PYTHONPATH=backend python -m iam_generator.main generate-role --role-name S3ReadRole s3 ls s3://my-bucket
+
+# Or install as package first
+cd backend && pip install -e .
+iam-generator analyze s3 ls s3://my-bucket
 iam-generator generate-role --role-name S3ReadRole s3 ls s3://my-bucket
 ```
 
@@ -100,11 +105,18 @@ make logs
 
 ```bash
 # Install Python dependencies
+cd backend
 pip install -r requirements.txt
 pip install -e .
 
+# Now you can use the CLI without PYTHONPATH
+iam-generator --help
+
+# Or use with PYTHONPATH from project root
+PYTHONPATH=backend python -m iam_generator.main --help
+
 # Optional: Install frontend dependencies
-cd frontend
+cd ../frontend
 npm install
 npm run build
 ```
@@ -114,33 +126,46 @@ npm run build
 ### Analyze Individual Commands
 ```bash
 # S3 operations analysis
-iam-generator analyze s3 sync s3://source/ s3://dest/ --delete
+PYTHONPATH=backend python -m iam_generator.main analyze s3 sync s3://source/ s3://dest/ --delete
 
 # EC2 management with JSON output
-iam-generator analyze --output json ec2 run-instances --image-id ami-12345
+PYTHONPATH=backend python -m iam_generator.main analyze --output json ec2 run-instances --image-id ami-12345
 
 # Lambda function analysis
+PYTHONPATH=backend python -m iam_generator.main analyze lambda create-function --function-name test
+
+# Or with installed package
+iam-generator analyze s3 sync s3://source/ s3://dest/ --delete
+iam-generator analyze --output json ec2 run-instances --image-id ami-12345
 iam-generator analyze lambda create-function --function-name test
 ```
 
 ### Generate IAM Roles
 ```bash
 # Basic S3 role
-iam-generator generate-role --role-name S3ReadRole s3 ls s3://my-bucket
+PYTHONPATH=backend python -m iam_generator.main generate-role --role-name S3ReadRole s3 ls s3://my-bucket
 
 # Lambda execution role with Terraform output
-iam-generator generate-role \
+PYTHONPATH=backend python -m iam_generator.main generate-role \
   --role-name LambdaExecutionRole \
   --trust-policy lambda \
   --output-format terraform \
   lambda invoke --function-name my-function
 
 # Cross-account access role
-iam-generator generate-role \
+PYTHONPATH=backend python -m iam_generator.main generate-role \
   --role-name CrossAccountRole \
   --trust-policy cross-account \
   --account-id 123456789012 \
   s3 ls s3://shared-bucket
+
+# Or with installed package
+iam-generator generate-role --role-name S3ReadRole s3 ls s3://my-bucket
+iam-generator generate-role \
+  --role-name LambdaExecutionRole \
+  --trust-policy lambda \
+  --output-format terraform \
+  lambda invoke --function-name my-function
 ```
 
 ### Batch Analysis
@@ -155,6 +180,9 @@ dynamodb scan --table-name MyTable
 EOF
 
 # Analyze all commands with detailed output
+PYTHONPATH=backend python -m iam_generator.main batch-analyze commands.txt --output-dir ./results
+
+# Or with installed package
 iam-generator batch-analyze commands.txt --output-dir ./results
 ```
 
@@ -168,6 +196,10 @@ Generate policies with specific ARN patterns instead of wildcards:
 
 ```bash
 # CLI usage
+PYTHONPATH=backend python -m iam_generator.main analyze s3 cp s3://my-bucket/file.txt ./local-file
+PYTHONPATH=backend python -m iam_generator.main analyze ec2 terminate-instances --instance-ids i-1234567890abcdef0
+
+# Or with installed package
 iam-generator analyze s3 cp s3://my-bucket/file.txt ./local-file
 iam-generator analyze ec2 terminate-instances --instance-ids i-1234567890abcdef0
 
@@ -187,6 +219,14 @@ Generate minimal required permissions with enhanced security conditions:
 
 ```bash
 # CLI usage
+PYTHONPATH=backend python -m iam_generator.main generate-role \
+  --role-name OptimizedRole \
+  --least-privilege \
+  s3 ls s3://bucket \
+  s3 cp s3://bucket/file.txt ./file \
+  ec2 describe-instances
+
+# Or with installed package
 iam-generator generate-role \
   --role-name OptimizedRole \
   --least-privilege \
@@ -209,6 +249,12 @@ Get comprehensive breakdown of AWS services, actions, and permissions:
 
 ```bash
 # CLI usage
+PYTHONPATH=backend python -m iam_generator.main service-summary \
+  s3 ls s3://bucket \
+  ec2 describe-instances \
+  lambda list-functions
+
+# Or with installed package
 iam-generator service-summary \
   s3 ls s3://bucket \
   ec2 describe-instances \
@@ -256,6 +302,9 @@ iam-generator service-summary \
 **Complete service list:**
 ```bash
 # View all supported services and their commands
+PYTHONPATH=backend python -m iam_generator.main list-services
+
+# Or with installed package
 iam-generator list-services
 ```
 
@@ -263,27 +312,32 @@ iam-generator list-services
 
 ### 1. Terraform
 ```bash
-iam-generator generate-role --output-format terraform --role-name MyRole s3 ls
+PYTHONPATH=backend python -m iam_generator.main generate-role --output-format terraform --role-name MyRole s3 ls
+# Or: iam-generator generate-role --output-format terraform --role-name MyRole s3 ls
 ```
 
 ### 2. CloudFormation
 ```bash
-iam-generator generate-role --output-format cloudformation --role-name MyRole s3 ls
+PYTHONPATH=backend python -m iam_generator.main generate-role --output-format cloudformation --role-name MyRole s3 ls
+# Or: iam-generator generate-role --output-format cloudformation --role-name MyRole s3 ls
 ```
 
 ### 3. AWS CLI
 ```bash
-iam-generator generate-role --output-format aws-cli --role-name MyRole s3 ls
+PYTHONPATH=backend python -m iam_generator.main generate-role --output-format aws-cli --role-name MyRole s3 ls
+# Or: iam-generator generate-role --output-format aws-cli --role-name MyRole s3 ls
 ```
 
 ### 4. JSON Policy
 ```bash
-iam-generator analyze --output json s3 cp file.txt s3://bucket/
+PYTHONPATH=backend python -m iam_generator.main analyze --output json s3 cp file.txt s3://bucket/
+# Or: iam-generator analyze --output json s3 cp file.txt s3://bucket/
 ```
 
 ### 5. YAML
 ```bash
-iam-generator analyze --output yaml ec2 describe-instances
+PYTHONPATH=backend python -m iam_generator.main analyze --output yaml ec2 describe-instances
+# Or: iam-generator analyze --output yaml ec2 describe-instances
 ```
 
 ## 🛠️ Development Setup

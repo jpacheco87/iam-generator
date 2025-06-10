@@ -104,8 +104,13 @@ docker-compose up -d
 make dev
 docker-compose -f docker-compose.dev.yml up -d
 
-# CLI usage
+# CLI usage (from project root)
 PYTHONPATH=backend python -m iam_generator.main analyze s3 ls
+PYTHONPATH=backend python -m iam_generator.main analyze ec2 describe-instances
+
+# Or install package first
+cd backend && pip install -e . && cd ..
+iam-generator analyze s3 ls
 iam-generator analyze ec2 describe-instances
 
 # Run tests
