@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="aws-iam-generator",
-    version="1.0.0",
+    version="2.1.0",
     description="AWS CLI IAM permissions analyzer and role generator",
     author="IAM Generator Team",
     author_email="team@iamgenerator.dev",

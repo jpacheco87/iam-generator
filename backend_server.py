@@ -56,6 +56,7 @@ async def health_check():
 # Request/Response models
 class AnalysisRequest(BaseModel):
     command: str
+    debug: bool = False
 
 class AnalysisResponse(BaseModel):
     service: str
@@ -73,6 +74,7 @@ class RoleGenerationRequest(BaseModel):
     output_format: str
     account_id: Optional[str] = None
     description: Optional[str] = None
+    debug: bool = False
 
 class RoleConfigResponse(BaseModel):
     role_name: str
@@ -84,6 +86,7 @@ class RoleConfigResponse(BaseModel):
 
 class BatchAnalysisRequest(BaseModel):
     commands: List[str]
+    debug: bool = False
 
 class BatchAnalysisResponse(BaseModel):
     results: List[Dict[str, Any]]
@@ -95,6 +98,7 @@ class ResourceSpecificRequest(BaseModel):
     account_id: Optional[str] = None
     region: Optional[str] = None
     strict_mode: bool = True
+    debug: bool = False
 
 class ResourceSpecificResponse(BaseModel):
     policy_document: Dict[str, Any]
@@ -106,9 +110,11 @@ class LeastPrivilegeRequest(BaseModel):
     commands: List[str]
     account_id: Optional[str] = None
     region: Optional[str] = None
+    debug: bool = False
 
 class ServiceSummaryRequest(BaseModel):
     commands: List[str]
+    debug: bool = False
 
 class ServiceSummaryResponse(BaseModel):
     summary: Dict[str, Dict[str, Any]]
@@ -136,8 +142,11 @@ async def analyze_command(request: AnalysisRequest):
         if not command.startswith('aws '):
             command = f"aws {command}"
         
-        # Analyze the command
-        result = analyzer.analyze_command(command)
+        # Create analyzer with debug mode
+        print(f"DEBUG: Creating analyzer with debug_mode={request.debug}")
+        analyzer_instance = IAMPermissionAnalyzer(debug_mode=request.debug)
+        result = analyzer_instance.analyze_command(command)
+        print(f"DEBUG: Result warnings: {result.get('warnings', [])}")
         
         return AnalysisResponse(
             service=result["service"],
@@ -160,8 +169,9 @@ async def generate_role(request: RoleGenerationRequest):
         if not command.startswith('aws '):
             command = f"aws {command}"
         
-        # First analyze the command
-        analysis_result = analyzer.analyze_command(command)
+        # Create analyzer with debug mode
+        analyzer_instance = IAMPermissionAnalyzer(debug_mode=request.debug)
+        analysis_result = analyzer_instance.analyze_command(command)
         
         # Generate the role
         trust_policy = request.trust_policy if request.trust_policy else "ec2"
@@ -211,8 +221,9 @@ async def batch_analyze(request: BatchAnalysisRequest):
                 cmd = f"aws {cmd}"
             normalized_commands.append(cmd)
         
-        # Analyze all commands
-        analysis_result = analyzer.analyze_commands(normalized_commands)
+        # Create analyzer with debug mode
+        analyzer_instance = IAMPermissionAnalyzer(debug_mode=request.debug)
+        analysis_result = analyzer_instance.analyze_commands(normalized_commands)
         
         # Build individual results
         results = []
@@ -279,8 +290,11 @@ async def analyze_resource_specific(request: ResourceSpecificRequest):
                 cmd = f"aws {cmd}"
             normalized_commands.append(cmd)
         
+        # Create analyzer with debug mode
+        analyzer_instance = IAMPermissionAnalyzer(debug_mode=request.debug)
+        
         # Generate resource-specific policy
-        policy_doc = analyzer.generate_resource_specific_policy(
+        policy_doc = analyzer_instance.generate_resource_specific_policy(
             commands=normalized_commands,
             account_id=request.account_id,
             region=request.region,
@@ -319,8 +333,11 @@ async def analyze_least_privilege(request: LeastPrivilegeRequest):
                 cmd = f"aws {cmd}"
             normalized_commands.append(cmd)
         
+        # Create analyzer with debug mode
+        analyzer_instance = IAMPermissionAnalyzer(debug_mode=request.debug)
+        
         # Generate least privilege policy
-        policy_doc = analyzer.generate_least_privilege_policy(
+        policy_doc = analyzer_instance.generate_least_privilege_policy(
             commands=normalized_commands,
             account_id=request.account_id,
             region=request.region
@@ -350,8 +367,11 @@ async def get_service_summary(request: ServiceSummaryRequest):
                 cmd = f"aws {cmd}"
             normalized_commands.append(cmd)
         
+        # Create analyzer with debug mode
+        analyzer_instance = IAMPermissionAnalyzer(debug_mode=request.debug)
+        
         # Get service summary
-        summary = analyzer.get_service_summary(normalized_commands)
+        summary = analyzer_instance.get_service_summary(normalized_commands)
         
         total_services = len(summary)
         total_actions = sum(len(service_data.get("actions", [])) for service_data in summary.values())

@@ -1,6 +1,6 @@
 {
     "name": "iam-generator-frontend",
-    "version": "1.0.0",
+    "version": "2.1.0",
     "description": "Frontend interface for AWS CLI IAM Permissions Analyzer",
     "license": "UNLICENSED",
     "private": true,

@@ -1,0 +1,4 @@
+s3 ls s3://bucket
+lex put-bot --bot-name test
+ec2 copy-image --source-image-id ami-123
+fake-service fake-action

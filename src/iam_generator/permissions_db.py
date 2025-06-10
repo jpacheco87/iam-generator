@@ -244,6 +244,16 @@ class IAMPermissionsDatabase:
                     description="Revoke security group egress rules",
                     resource_patterns=["arn:aws:ec2:*:*:security-group/*"]
                 ),
+                "copy-image": CommandPermissions(
+                    service="ec2",
+                    action="copy-image",
+                    permissions=[
+                        IAMPermission(action="ec2:CopyImage", resource="*"),
+                        IAMPermission(action="ec2:DescribeImages", resource="*"),
+                    ],
+                    description="Copy EC2 AMI to another region",
+                    resource_patterns=["arn:aws:ec2:*:*:image/*"]
+                ),
             },
             "iam": {
                 "list-users": CommandPermissions(
@@ -493,6 +503,25 @@ class IAMPermissionsDatabase:
                     ],
                     description="Create RDS database snapshot",
                     resource_patterns=["arn:aws:rds:*:*:snapshot:*"]
+                ),
+                "describe-db-engine-versions": CommandPermissions(
+                    service="rds",
+                    action="describe-db-engine-versions",
+                    permissions=[
+                        IAMPermission(action="rds:DescribeDBEngineVersions", resource="*"),
+                    ],
+                    description="Describe RDS database engine versions",
+                    resource_patterns=["*"]
+                ),
+                "create-custom-db-engine-version": CommandPermissions(
+                    service="rds",
+                    action="create-custom-db-engine-version",
+                    permissions=[
+                        IAMPermission(action="rds:CreateCustomDBEngineVersion", resource="*"),
+                        IAMPermission(action="rds:DescribeDBEngineVersions", resource="*"),
+                    ],
+                    description="Create RDS custom database engine version",
+                    resource_patterns=["*"]
                 ),
             },
             "dynamodb": {
@@ -2733,6 +2762,196 @@ class IAMPermissionsDatabase:
                     ],
                     description="Get credentials for Cognito identity",
                     resource_patterns=["arn:aws:cognito-identity:*:*:identitypool/*"]
+                ),
+            },
+            
+            # === NEW AI/ML SERVICES ===
+            "bedrock-runtime": {
+                "invoke-model": CommandPermissions(
+                    service="bedrock-runtime",
+                    action="invoke-model",
+                    permissions=[
+                        IAMPermission(action="bedrock:InvokeModel", resource="*"),
+                        IAMPermission(action="bedrock:InvokeModelWithResponseStream", resource="*"),
+                    ],
+                    description="Invoke Amazon Bedrock foundation models",
+                    resource_patterns=["*"]
+                ),
+                "invoke-model-with-response-stream": CommandPermissions(
+                    service="bedrock-runtime",
+                    action="invoke-model-with-response-stream",
+                    permissions=[
+                        IAMPermission(action="bedrock:InvokeModelWithResponseStream", resource="*"),
+                    ],
+                    description="Invoke Amazon Bedrock models with streaming response",
+                    resource_patterns=["*"]
+                ),
+            },
+            "bedrock": {
+                "list-foundation-models": CommandPermissions(
+                    service="bedrock",
+                    action="list-foundation-models",
+                    permissions=[
+                        IAMPermission(action="bedrock:ListFoundationModels", resource="*"),
+                    ],
+                    description="List available foundation models in Amazon Bedrock",
+                    resource_patterns=["*"]
+                ),
+                "get-foundation-model": CommandPermissions(
+                    service="bedrock",
+                    action="get-foundation-model",
+                    permissions=[
+                        IAMPermission(action="bedrock:GetFoundationModel", resource="*"),
+                    ],
+                    description="Get details about a foundation model",
+                    resource_patterns=["*"]
+                ),
+            },
+            "textract": {
+                "detect-document-text": CommandPermissions(
+                    service="textract",
+                    action="detect-document-text",
+                    permissions=[
+                        IAMPermission(action="textract:DetectDocumentText", resource="*"),
+                    ],
+                    description="Detect text in documents using Amazon Textract",
+                    resource_patterns=["*"]
+                ),
+                "analyze-document": CommandPermissions(
+                    service="textract",
+                    action="analyze-document",
+                    permissions=[
+                        IAMPermission(action="textract:AnalyzeDocument", resource="*"),
+                    ],
+                    description="Analyze documents for forms and tables",
+                    resource_patterns=["*"]
+                ),
+                "start-document-text-detection": CommandPermissions(
+                    service="textract",
+                    action="start-document-text-detection",
+                    permissions=[
+                        IAMPermission(action="textract:StartDocumentTextDetection", resource="*"),
+                    ],
+                    description="Start asynchronous text detection",
+                    resource_patterns=["*"]
+                ),
+            },
+            "rekognition": {
+                "detect-faces": CommandPermissions(
+                    service="rekognition",
+                    action="detect-faces",
+                    permissions=[
+                        IAMPermission(action="rekognition:DetectFaces", resource="*"),
+                    ],
+                    description="Detect faces in images",
+                    resource_patterns=["*"]
+                ),
+                "detect-labels": CommandPermissions(
+                    service="rekognition",
+                    action="detect-labels",
+                    permissions=[
+                        IAMPermission(action="rekognition:DetectLabels", resource="*"),
+                    ],
+                    description="Detect labels in images",
+                    resource_patterns=["*"]
+                ),
+                "recognize-celebrities": CommandPermissions(
+                    service="rekognition",
+                    action="recognize-celebrities",
+                    permissions=[
+                        IAMPermission(action="rekognition:RecognizeCelebrities", resource="*"),
+                    ],
+                    description="Recognize celebrities in images",
+                    resource_patterns=["*"]
+                ),
+            },
+            "comprehend": {
+                "detect-sentiment": CommandPermissions(
+                    service="comprehend",
+                    action="detect-sentiment",
+                    permissions=[
+                        IAMPermission(action="comprehend:DetectSentiment", resource="*"),
+                    ],
+                    description="Detect sentiment in text",
+                    resource_patterns=["*"]
+                ),
+                "detect-entities": CommandPermissions(
+                    service="comprehend",
+                    action="detect-entities",
+                    permissions=[
+                        IAMPermission(action="comprehend:DetectEntities", resource="*"),
+                    ],
+                    description="Detect entities in text",
+                    resource_patterns=["*"]
+                ),
+                "detect-key-phrases": CommandPermissions(
+                    service="comprehend",
+                    action="detect-key-phrases",
+                    permissions=[
+                        IAMPermission(action="comprehend:DetectKeyPhrases", resource="*"),
+                    ],
+                    description="Detect key phrases in text",
+                    resource_patterns=["*"]
+                ),
+            },
+            "polly": {
+                "synthesize-speech": CommandPermissions(
+                    service="polly",
+                    action="synthesize-speech",
+                    permissions=[
+                        IAMPermission(action="polly:SynthesizeSpeech", resource="*"),
+                    ],
+                    description="Convert text to speech",
+                    resource_patterns=["*"]
+                ),
+                "describe-voices": CommandPermissions(
+                    service="polly",
+                    action="describe-voices",
+                    permissions=[
+                        IAMPermission(action="polly:DescribeVoices", resource="*"),
+                    ],
+                    description="List available voices",
+                    resource_patterns=["*"]
+                ),
+            },
+            "transcribe": {
+                "start-transcription-job": CommandPermissions(
+                    service="transcribe",
+                    action="start-transcription-job",
+                    permissions=[
+                        IAMPermission(action="transcribe:StartTranscriptionJob", resource="*"),
+                    ],
+                    description="Start audio transcription job",
+                    resource_patterns=["*"]
+                ),
+                "get-transcription-job": CommandPermissions(
+                    service="transcribe",
+                    action="get-transcription-job",
+                    permissions=[
+                        IAMPermission(action="transcribe:GetTranscriptionJob", resource="*"),
+                    ],
+                    description="Get transcription job details",
+                    resource_patterns=["*"]
+                ),
+            },
+            "translate": {
+                "translate-text": CommandPermissions(
+                    service="translate",
+                    action="translate-text",
+                    permissions=[
+                        IAMPermission(action="translate:TranslateText", resource="*"),
+                    ],
+                    description="Translate text between languages",
+                    resource_patterns=["*"]
+                ),
+                "list-languages": CommandPermissions(
+                    service="translate",
+                    action="list-languages",
+                    permissions=[
+                        IAMPermission(action="translate:ListLanguages", resource="*"),
+                    ],
+                    description="List supported languages",
+                    resource_patterns=["*"]
                 ),
             },
         }

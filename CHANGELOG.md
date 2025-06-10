@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2025-06-09
+
+### Added
+- **AI/ML Services Expansion**: Added 8 new artificial intelligence and machine learning services
+  - **Amazon Bedrock**: Foundation model access and management
+    - `bedrock`: List and get foundation models
+    - `bedrock-runtime`: Invoke models with streaming support
+  - **Amazon Textract**: Document text and data extraction
+    - Document text detection, analysis, and asynchronous processing
+  - **Amazon Rekognition**: Image and video analysis
+    - Face detection, label recognition, and celebrity identification
+  - **Amazon Comprehend**: Natural language processing
+    - Sentiment analysis, entity detection, and key phrase extraction
+  - **Amazon Polly**: Text-to-speech conversion
+    - Speech synthesis with multiple voice options
+  - **Amazon Transcribe**: Speech-to-text conversion
+    - Audio transcription jobs and real-time processing
+  - **Amazon Translate**: Language translation
+    - Text translation between supported languages
+  - **Enhanced Coverage**: Database expanded from 44 to 52 services (+18% increase)
+
+### Enhanced
+- **Auto-Discovery System**: Improved fallback mechanism for unknown services
+  - Enhanced pattern-based permission mapping for AI/ML services
+  - Better confidence scoring for automatically discovered permissions
+  - Optimized response times by adding frequently-requested services to manual database
+- **Container Performance**: AI/ML services now use fast manual lookup instead of slower scraper fallback
+- **Service Documentation**: Updated comprehensive service list and examples
+
+### Validated
+- **Container Integration**: All new services verified working in Docker containers
+- **API Functionality**: REST API endpoints confirmed returning correct permissions for all new services
+- **Database Integrity**: Validated 52-service count and proper permission mappings
+
 ## [2.0.1] - 2025-06-09
 
 ### Added
@@ -51,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - SSL/TLS support ready
 
 ### Enhanced
-- **Expanded Service Coverage**: Now supports 44 AWS services with 200+ commands
+- **Expanded Service Coverage**: Now supports 44 AWS services with 200+ commands (expanded to 52 services in v2.1.0)
   - **Core Services**: S3, EC2, IAM, Lambda
   - **Database Services**: RDS, DynamoDB, ElastiCache, Redshift
   - **Container Services**: ECS, ECR, EKS

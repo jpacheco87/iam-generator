@@ -7,7 +7,7 @@ A comprehensive tool that analyzes AWS CLI commands and generates the minimal IA
 ## 🌟 Key Features
 
 - **Intelligent Command Analysis**: Advanced parsing of AWS CLI commands to extract services, actions, and resource ARNs
-- **Comprehensive Permission Mapping**: Database of 44 AWS services with 200+ command mappings
+- **Comprehensive Permission Mapping**: Database of 52 AWS services with 300+ command mappings
 - **Multiple Interfaces**: CLI tool, modern React web interface, and REST API
 - **Resource-Specific Permissions**: Generate precise ARN patterns instead of wildcard permissions
 - **Smart Role Generation**: Create complete IAM roles with appropriate trust policies
@@ -184,11 +184,12 @@ iam-generator service-summary \
 
 ## 📊 Supported AWS Services
 
-**44 AWS Services** with comprehensive command coverage:
+**52 AWS Services** with comprehensive command coverage:
 
 | Service Category | Services | Commands |
 |------------------|----------|----------|
 | **Core Services** | S3, EC2, IAM, Lambda | 50+ |
+| **AI/ML Services** | Bedrock, Bedrock Runtime, Textract, Rekognition, Comprehend, Polly, Transcribe, Translate | 19+ |
 | **Container Services** | ECS, ECR, EKS | 25+ |
 | **DevOps & CI/CD** | CodeCommit, CodeBuild, CodeDeploy, CodePipeline | 35+ |
 | **Data & Analytics** | SageMaker, Glue, Athena, EMR, Redshift, OpenSearch, Kinesis | 60+ |
@@ -241,7 +242,7 @@ iam_generator/
 ├── src/iam_generator/          # Core Python package
 │   ├── analyzer.py             # Permission analysis engine
 │   ├── parser.py               # AWS CLI command parser
-│   ├── permissions_db.py       # Permission database (44 services)
+│   ├── permissions_db.py       # Permission database (52 services)
 │   ├── role_generator.py       # IAM role generator
 │   └── cli.py                  # CLI interface
 ├── frontend/                   # React TypeScript frontend
@@ -385,7 +386,7 @@ This project is proprietary software. All rights reserved. See the [LICENSE](LIC
 ## 🚀 Roadmap
 
 **✅ Recently Completed:**
-- ✅ Support for 44 AWS services with 200+ commands
+- ✅ Support for 52 AWS services with 300+ commands
 - ✅ Modern React web interface with shadcn/ui components
 - ✅ FastAPI REST API backend with comprehensive endpoints
 - ✅ Multiple output formats (Terraform, CloudFormation, AWS CLI, JSON, YAML)

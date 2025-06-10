@@ -1,0 +1,208 @@
+{
+  "personalize:create-dataset": {
+    "service": "personalize",
+    "command": "create-dataset",
+    "permissions": [
+      {
+        "action": "personalize:Create*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      },
+      {
+        "action": "personalize:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for personalize create-dataset",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:23:09.264329",
+    "last_accessed": "2025-06-09T15:26:44.668203",
+    "access_count": 2
+  },
+  "forecast:create-dataset": {
+    "service": "forecast",
+    "command": "create-dataset",
+    "permissions": [
+      {
+        "action": "forecast:Create*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      },
+      {
+        "action": "forecast:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for forecast create-dataset",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:24:24.595866",
+    "last_accessed": "2025-06-09T15:26:44.669056",
+    "access_count": 2
+  },
+  "amplify:create-app": {
+    "service": "amplify",
+    "command": "create-app",
+    "permissions": [
+      {
+        "action": "amplify:Create*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      },
+      {
+        "action": "amplify:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for amplify create-app",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:24:31.029851",
+    "last_accessed": "2025-06-09T15:26:44.669238",
+    "access_count": 2
+  },
+  "connect:describe-instance": {
+    "service": "connect",
+    "command": "describe-instance",
+    "permissions": [
+      {
+        "action": "connect:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for connect describe-instance",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:26:45.862164",
+    "last_accessed": "2025-06-09T15:26:45.862177",
+    "access_count": 1
+  },
+  "workspaces:describe-workspaces": {
+    "service": "workspaces",
+    "command": "describe-workspaces",
+    "permissions": [
+      {
+        "action": "workspaces:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for workspaces describe-workspaces",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:26:46.491474",
+    "last_accessed": "2025-06-09T15:26:46.491488",
+    "access_count": 1
+  },
+  "memorydb:describe-clusters": {
+    "service": "memorydb",
+    "command": "describe-clusters",
+    "permissions": [
+      {
+        "action": "memorydb:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for memorydb describe-clusters",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:26:47.099213",
+    "last_accessed": "2025-06-09T15:26:47.099223",
+    "access_count": 1
+  },
+  "neptune:describe-db-clusters": {
+    "service": "neptune",
+    "command": "describe-db-clusters",
+    "permissions": [
+      {
+        "action": "neptune:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for neptune describe-db-clusters",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-09T15:26:47.728138",
+    "last_accessed": "2025-06-09T15:26:47.728152",
+    "access_count": 1
+  },
+  "iam:attach-role-policy": {
+    "service": "iam",
+    "command": "attach-role-policy",
+    "permissions": [
+      {
+        "action": "iam:Attach*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      },
+      {
+        "action": "iam:Describe*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for iam attach-role-policy",
+    "resource_patterns": [
+      "arn:aws:iam::*:user/*",
+      "arn:aws:iam::*:role/*",
+      "arn:aws:iam::*:policy/*"
+    ],
+    "discovered_at": "2025-06-09T15:59:11.945901",
+    "last_accessed": "2025-06-09T15:59:11.945928",
+    "access_count": 1
+  },
+  "organizations:list-accounts": {
+    "service": "organizations",
+    "command": "list-accounts",
+    "permissions": [
+      {
+        "action": "organizations:List*",
+        "resource": "*",
+        "condition": null,
+        "effect": "Allow"
+      }
+    ],
+    "confidence": "medium",
+    "description": "Auto-generated permissions for organizations list-accounts",
+    "resource_patterns": [
+      "*"
+    ],
+    "discovered_at": "2025-06-10T06:41:36.498283",
+    "last_accessed": "2025-06-10T06:41:36.498305",
+    "access_count": 1
+  }
+}

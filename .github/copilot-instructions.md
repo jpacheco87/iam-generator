@@ -28,8 +28,9 @@ This is an AWS CLI IAM permissions analyzer tool built in Python. The tool accep
 - JSON for configuration management
 
 ## Current Status
-The tool currently supports 44 AWS services with 200+ total commands, including:
+The tool currently supports 52 AWS services with 300+ total commands, including:
 - **Core services**: S3, EC2, IAM, Lambda
+- **AI/ML services**: Bedrock, Bedrock Runtime, Textract, Rekognition, Comprehend, Polly, Transcribe, Translate
 - **Database services**: RDS, DynamoDB, ElastiCache, Redshift
 - **Container services**: ECS, ECR, EKS
 - **DevOps services**: CodeCommit, CodeBuild, CodeDeploy, CodePipeline
@@ -47,7 +48,7 @@ The tool currently supports 44 AWS services with 200+ total commands, including:
 ### Additional Services to Consider for Future Implementation
 Since all major roadmap services have been implemented, consider these additional services:
 - **IoT Services** - AWS IoT Core, IoT Device Management
-- **Machine Learning** - Amazon Rekognition, Amazon Textract, Amazon Comprehend
+- **Additional Machine Learning** - Amazon SageMaker (advanced features), Amazon Personalize, Amazon Forecast
 - **Blockchain** - Amazon Managed Blockchain
 - **Game Development** - Amazon GameLift
 - **Media Services** - AWS Elemental MediaConvert, MediaLive
@@ -58,12 +59,13 @@ Since all major roadmap services have been implemented, consider these additiona
 - **Edge Computing** - AWS Wavelength, AWS Local Zones services
 
 ### Enhanced Features Recently Implemented ✅
-1. **Resource-specific permissions**: ✅ COMPLETED - Replace wildcard `*` resources with actual resource ARNs when provided in commands (supports S3, EC2, Lambda, DynamoDB, IAM)
-2. **Least privilege optimization**: ✅ COMPLETED - Analyze usage patterns and suggest minimal required permissions
-3. **Service usage summary**: ✅ COMPLETED - Comprehensive analysis of service usage and permission requirements
-4. **Enhanced web interface**: ✅ COMPLETED - Advanced batch analyzer with multiple analysis modes
-5. **Docker containerization**: ✅ COMPLETED - Full Docker support with FastAPI backend and React frontend
-6. **Production deployment**: ✅ COMPLETED - Docker Compose setup with Nginx proxy and health checks
+1. **AI/ML Services Expansion**: ✅ COMPLETED - Added 8 new AI/ML services (Bedrock, Bedrock Runtime, Textract, Rekognition, Comprehend, Polly, Transcribe, Translate) expanding from 44 to 52 total services
+2. **Resource-specific permissions**: ✅ COMPLETED - Replace wildcard `*` resources with actual resource ARNs when provided in commands (supports S3, EC2, Lambda, DynamoDB, IAM)
+3. **Least privilege optimization**: ✅ COMPLETED - Analyze usage patterns and suggest minimal required permissions
+4. **Service usage summary**: ✅ COMPLETED - Comprehensive analysis of service usage and permission requirements
+5. **Enhanced web interface**: ✅ COMPLETED - Advanced batch analyzer with multiple analysis modes
+6. **Docker containerization**: ✅ COMPLETED - Full Docker support with FastAPI backend and React frontend
+7. **Production deployment**: ✅ COMPLETED - Docker Compose setup with Nginx proxy and health checks
 
 ### Enhanced Features to Develop (Future Roadmap)
 1. **Conditional policies**: Add support for IAM conditions based on command parameters (IP restrictions, MFA requirements, etc.)
@@ -75,7 +77,7 @@ Since all major roadmap services have been implemented, consider these additiona
 4. **Time-based permissions**: Support for temporary access patterns
 5. **Multi-region considerations**: Handle region-specific resources and permissions
 6. **Cost optimization**: Estimate costs associated with permissions and suggest alternatives
-7. **Enhanced ARN support**: Extend resource-specific ARN generation to all 44 supported AWS services
+7. **Enhanced ARN support**: Extend resource-specific ARN generation to all 52 supported AWS services
 
 ### Code Quality Improvements
 1. **Performance optimization**: Cache permission lookups and optimize database queries

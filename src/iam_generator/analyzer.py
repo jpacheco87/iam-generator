@@ -13,6 +13,20 @@ from pydantic import BaseModel, Field
 from .parser import AWSCLIParser, ParsedCommand
 from .permissions_db import IAMPermissionsDatabase, IAMPermission, CommandPermissions
 
+# Import the auto-discovery system
+try:
+    from .auto_discovery import EnhancedPermissionsDatabase, create_enhanced_database
+    AUTO_DISCOVERY_AVAILABLE = True
+except ImportError:
+    AUTO_DISCOVERY_AVAILABLE = False
+
+# Import the documentation scraper for fallback functionality
+try:
+    from .doc_scraper import AWSCLIDocumentationScraper
+    DOC_SCRAPER_AVAILABLE = True
+except ImportError:
+    DOC_SCRAPER_AVAILABLE = False
+
 
 class AnalysisResult(BaseModel):
     """Result of IAM permission analysis."""
@@ -39,10 +53,34 @@ class ResourceSpecificPolicy(BaseModel):
 class IAMPermissionAnalyzer:
     """Main analyzer for AWS CLI commands and IAM permissions."""
     
-    def __init__(self):
-        """Initialize the analyzer."""
+    def __init__(self, enable_auto_discovery: bool = True, debug_mode: bool = False):
+        """Initialize the analyzer.
+        
+        Args:
+            enable_auto_discovery: Enable automatic discovery of new services/commands
+            debug_mode: Enable debug warnings for fallback permissions
+        """
         self.parser = AWSCLIParser()
-        self.permissions_db = IAMPermissionsDatabase()
+        self.debug_mode = debug_mode
+        
+        # Use enhanced database if auto-discovery is available
+        if AUTO_DISCOVERY_AVAILABLE and enable_auto_discovery:
+            self.permissions_db = create_enhanced_database(
+                enable_auto_discovery=True,
+                enable_background_preload=True
+            )
+            self.auto_discovery_enabled = True
+        else:
+            self.permissions_db = IAMPermissionsDatabase()
+            self.auto_discovery_enabled = False
+        
+        # Initialize documentation scraper for fallback functionality
+        if DOC_SCRAPER_AVAILABLE:
+            self._doc_scraper = AWSCLIDocumentationScraper()
+            self._scraper_cache = {}  # Cache for discovered services/commands
+        else:
+            self._doc_scraper = None
+            self._scraper_cache = None
     
     def analyze_command(self, command: str, 
                        strict_resources: bool = False,
@@ -147,16 +185,38 @@ class IAMPermissionAnalyzer:
                         fallback_perm = self._generate_fallback_permission(parsed_cmd)
                         all_permissions.append(fallback_perm)
                         
-                        warnings.append(
-                            f"Command '{command_str}' not found in permissions database. "
-                            f"Generated fallback permission: {fallback_perm.action}"
-                        )
+                        if self.debug_mode:
+                            warnings.append(
+                                f"Command '{command_str}' not found in permissions database. "
+                                f"Generated fallback permission: {fallback_perm.action}"
+                            )
                     else:
-                        # Unsupported service - no permissions generated
-                        warnings.append(
-                            f"Service '{parsed_cmd.service}' is not supported. "
-                            f"No permissions generated for command: {command_str}"
-                        )
+                        # Try using documentation scraper as fallback
+                        scraper_permissions = self._get_scraper_permissions(parsed_cmd)
+                        if scraper_permissions:
+                            all_permissions.extend(scraper_permissions)
+                            if self.debug_mode:
+                                warnings.append(
+                                    f"Command '{command_str}' not found in permissions database. "
+                                    f"Used doc scraper fallback: {[perm.action for perm in scraper_permissions]}"
+                                )
+                        else:
+                            # Try fallback for unknown service
+                            fallback_permissions = self._try_scraper_for_unknown_service(parsed_cmd)
+                            if fallback_permissions:
+                                all_permissions.extend(fallback_permissions)
+                                if self.debug_mode:
+                                    warnings.append(
+                                        f"Unknown service '{parsed_cmd.service}' - used doc scraper: {[perm.action for perm in fallback_permissions]}"
+                                    )
+                            else:
+                                # Last resort - generate basic fallback
+                                fallback_perm = self._generate_fallback_permission(parsed_cmd)
+                                all_permissions.append(fallback_perm)
+                                if self.debug_mode:
+                                    warnings.append(
+                                        f"Unknown command '{command_str}' - generated basic fallback: {fallback_perm.action}"
+                                    )
             
             except ValueError as e:
                 warnings.append(f"Failed to parse command '{command_str}': {str(e)}")
@@ -787,111 +847,174 @@ class IAMPermissionAnalyzer:
         
         return summary
 
-
-    def _enhance_with_additional_permissions(self, permissions: List[IAMPermission], 
-                                           parsed_command: ParsedCommand) -> List[IAMPermission]:
+    def get_auto_discovery_stats(self) -> Dict:
         """
-        Enhance permissions with additional commonly needed permissions.
+        Get comprehensive auto-discovery statistics.
+        
+        Returns:
+            Dictionary with auto-discovery statistics and performance metrics
+        """
+        if not self.auto_discovery_enabled or not hasattr(self.permissions_db, 'get_auto_discovery_stats'):
+            return {
+                'auto_discovery_enabled': False,
+                'message': 'Auto-discovery is not enabled or available'
+            }
+        
+        # Get stats from the enhanced database
+        stats = self.permissions_db.get_auto_discovery_stats()
+        
+        # Add additional analyzer-level stats
+        stats.update({
+            'analyzer_cache_size': len(self._scraper_cache) if self._scraper_cache else 0,
+            'scraper_available': DOC_SCRAPER_AVAILABLE,
+            'auto_discovery_available': AUTO_DISCOVERY_AVAILABLE,
+            'supported_manual_services': len(self.permissions_db.get_supported_services()) if hasattr(self.permissions_db, 'get_supported_services') else 0
+        })
+        
+        return stats
+
+    def _get_scraper_permissions(self, parsed_cmd: ParsedCommand) -> List[IAMPermission]:
+        """
+        Get permissions using documentation scraper for known services.
         
         Args:
-            permissions: Base permissions
-            parsed_command: The parsed command
+            parsed_cmd: Parsed command
             
         Returns:
-            Enhanced permissions list
+            List of IAM permissions from scraper, or empty list if unavailable
         """
-        # This is a placeholder method for test compatibility
-        # In a real implementation, this would add commonly needed permissions
-        # based on the service and action
-        return permissions
+        if not DOC_SCRAPER_AVAILABLE or not self._doc_scraper:
+            return []
+        
+        try:
+            # Use cached result if available
+            cache_key = f"{parsed_cmd.service}:{parsed_cmd.action}"
+            if self._scraper_cache and cache_key in self._scraper_cache:
+                return self._scraper_cache[cache_key]
+            
+            # Try to map the command using the scraper
+            command_perms = self._doc_scraper.map_command_to_permissions(
+                parsed_cmd.service, parsed_cmd.action
+            )
+            
+            # Cache the result
+            if self._scraper_cache is not None:
+                self._scraper_cache[cache_key] = command_perms.permissions
+            
+            return command_perms.permissions
+            
+        except Exception as e:
+            # Log the error but don't fail - fallback to other methods
+            print(f"Warning: Scraper failed for {parsed_cmd.service} {parsed_cmd.action}: {e}")
+            return []
+    
+    def _try_scraper_for_unknown_service(self, parsed_cmd: ParsedCommand) -> List[IAMPermission]:
+        """
+        Try using scraper for completely unknown services.
+        
+        Args:
+            parsed_cmd: Parsed command
+            
+        Returns:
+            List of IAM permissions from scraper, or empty list if unavailable
+        """
+        if not DOC_SCRAPER_AVAILABLE or not self._doc_scraper:
+            return []
+        
+        try:
+            # Check if the scraper knows about this service
+            services = self._doc_scraper.discover_services()
+            if parsed_cmd.service in services:
+                # Service exists, try to discover the command
+                commands = self._doc_scraper.discover_commands(parsed_cmd.service)
+                command_names = [cmd.command for cmd in commands]
+                
+                if parsed_cmd.action in command_names:
+                    # Command exists, map it to permissions
+                    command_perms = self._doc_scraper.map_command_to_permissions(
+                        parsed_cmd.service, parsed_cmd.action
+                    )
+                    return command_perms.permissions
+            
+            return []
+            
+        except Exception as e:
+            # Log the error but don't fail
+            print(f"Warning: Unknown service scraper failed for {parsed_cmd.service}: {e}")
+            return []
 
     def _should_use_specific_resource(self, action: str, service: str) -> bool:
         """
-        Determine if specific resource ARNs should be used for this action.
+        Determine whether to use specific resource ARNs for an action/service combination.
         
         Args:
-            action: IAM action
-            service: AWS service
+            action: IAM action (e.g., "s3:GetObject")
+            service: AWS service (e.g., "s3")
             
         Returns:
-            True if specific resources should be used
+            True if specific resources should be used, False otherwise
         """
-        # For S3, use specific bucket/object ARNs for most operations
-        if service == "s3" and action in [
-            "s3:ListBucket", "s3:GetBucketLocation", 
-            "s3:GetObject", "s3:PutObject", "s3:DeleteObject"
-        ]:
-            return True
+        # Define actions that should use specific resources when available
+        specific_resource_actions = {
+            "s3": {
+                "s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:GetObjectAcl",
+                "s3:PutObjectAcl", "s3:ListBucket", "s3:GetBucketLocation", 
+                "s3:GetBucketAcl", "s3:PutBucketAcl"
+            },
+            "ec2": {
+                "ec2:TerminateInstances", "ec2:StopInstances", "ec2:StartInstances",
+                "ec2:RebootInstances", "ec2:DescribeInstances", "ec2:ModifyInstanceAttribute",
+                "ec2:GetConsoleOutput", "ec2:GetConsoleScreenshot"
+            },
+            "lambda": {
+                "lambda:InvokeFunction", "lambda:GetFunction", "lambda:UpdateFunctionCode",
+                "lambda:UpdateFunctionConfiguration", "lambda:DeleteFunction",
+                "lambda:AddPermission", "lambda:RemovePermission"
+            },
+            "dynamodb": {
+                "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:Scan",
+                "dynamodb:BatchGetItem", "dynamodb:BatchWriteItem"
+            },
+            "iam": {
+                "iam:GetUser", "iam:GetRole", "iam:GetPolicy", "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy", "iam:AttachUserPolicy", "iam:DetachUserPolicy",
+                "iam:DeleteUser", "iam:DeleteRole"
+            }
+        }
         
-        # For EC2, use specific instance ARNs for instance operations
-        if service == "ec2" and "Instance" in action:
-            return True
-        
-        # For Lambda, use specific function ARNs
-        if service == "lambda" and "Function" in action:
-            return True
-        
-        return False
-    
+        service_actions = specific_resource_actions.get(service, set())
+        return action in service_actions
+
     def _select_appropriate_resource_arn(self, action: str, resource_arns: List[str]) -> Optional[str]:
         """
-        Select the most appropriate resource ARN for the given action.
+        Select the most appropriate resource ARN for a given action.
         
         Args:
-            action: IAM action
-            resource_arns: Available resource ARNs
+            action: IAM action (e.g., "s3:GetObject")
+            resource_arns: List of available resource ARNs
             
         Returns:
-            Most appropriate ARN or None
+            Selected resource ARN or None if no appropriate match
         """
         if not resource_arns:
             return None
-        
-        bucket_arns = [arn for arn in resource_arns if arn.startswith("arn:aws:s3:::") and "/" not in arn.split(":::")[-1]]
-        object_arns = [arn for arn in resource_arns if arn.startswith("arn:aws:s3:::") and "/" in arn.split(":::")[-1]]
-        
-        # For S3 ListBucket action, use bucket ARNs
-        if action == "s3:ListBucket":
-            if bucket_arns:
-                # For operations involving multiple buckets, we need to return a pattern
-                # that covers all buckets, but we can't return multiple ARNs from this method
-                # Instead, let the enhancement logic handle multiple buckets
-                return bucket_arns[0]
-        
-        # For S3 GetObject, prefer object ARNs, fallback to bucket/* pattern
-        if action == "s3:GetObject":
-            if object_arns:
-                return object_arns[0]
             
-            # Fallback to bucket ARNs with /* pattern
-            if bucket_arns:
-                return bucket_arns[0] + "/*"
+        # For most cases, just return the first ARN
+        # This could be enhanced with more sophisticated matching logic
+        service = action.split(":")[0] if ":" in action else ""
         
-        # For S3 PutObject, use bucket/* pattern for destination access
-        if action == "s3:PutObject":
-            # For put operations, we need write access to buckets
-            # Use bucket/* pattern to allow writing to any path in the bucket
-            if bucket_arns:
-                return bucket_arns[0] + "/*"
+        # Filter ARNs by service if possible
+        matching_arns = [
+            arn for arn in resource_arns 
+            if service in arn or arn.startswith(f"arn:aws:{service}:")
+        ]
+        
+        if matching_arns:
+            return matching_arns[0]
             
-            # Fallback to object ARN if that's all we have
-            if object_arns:
-                return object_arns[0]
-        
-        # For other S3 delete operations
-        if action == "s3:DeleteObject":
-            object_arns = [arn for arn in resource_arns if arn.startswith("arn:aws:s3:::") and "/" in arn.split(":::")[-1]]
-            if object_arns:
-                return object_arns[0]
-            
-            # Fallback to bucket ARNs with /* pattern
-            bucket_arns = [arn for arn in resource_arns if arn.startswith("arn:aws:s3:::") and "/" not in arn.split(":::")[-1]]
-            if bucket_arns:
-                return bucket_arns[0] + "/*"
-        
-        # Default: return first ARN
+        # Fallback to first ARN if no service-specific match
         return resource_arns[0]
-
 
 # Example usage
 if __name__ == "__main__":
