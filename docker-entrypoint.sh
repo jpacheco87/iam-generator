@@ -41,7 +41,14 @@ print('✅ Database initialized successfully!')
 run_backend() {
     echo "🚀 Starting FastAPI backend server..."
     setup_application
-    exec uvicorn backend_server:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info
+    
+    # Check if reload is enabled via environment variable
+    if [ "${RELOAD}" = "true" ]; then
+        echo "🔄 Development mode: Auto-reload enabled"
+        exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload --log-level debug
+    else
+        exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info
+    fi
 }
 
 # Function to run the CLI
@@ -75,7 +82,7 @@ run_dev() {
     pip install pytest pytest-cov black flake8 mypy
     
     # Run backend with auto-reload
-    exec uvicorn backend_server:app --host 0.0.0.0 --port ${PORT:-8000} --reload --log-level debug
+    exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --reload --log-level debug
 }
 
 # Main execution logic

@@ -61,7 +61,7 @@ fi
 
 # Start backend in background
 echo "🚀 Starting backend server on http://localhost:8000"
-python backend_server.py &
+PYTHONPATH=backend python -m backend.app.main &
 BACKEND_PID=$!
 
 # Wait for backend to start

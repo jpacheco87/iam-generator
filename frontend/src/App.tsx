@@ -79,7 +79,7 @@ function App() {
             <div className="flex items-center gap-3">
                 <img src="/shield.svg" alt="IAM Policy Generator Logo" className="h-8 w-8" /> 
                 <div>
-                  <h1 className="text-xl font-semibold text-white">IAM Policy Generator</h1>
+                  <h1 className="text-xl font-semibold text-white">IAM Policy Generator [HOT RELOAD WORKING]</h1>
                   <p className="text-aws-gray-300 text-xs">
                     Analyze AWS CLI commands and generate precise IAM permissions
                   </p>

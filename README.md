@@ -9,12 +9,16 @@ A comprehensive tool that analyzes AWS CLI commands and generates the minimal IA
 - **Intelligent Command Analysis**: Advanced parsing of AWS CLI commands to extract services, actions, and resource ARNs
 - **Comprehensive Permission Mapping**: Database of 52 AWS services with 300+ command mappings
 - **Multiple Interfaces**: CLI tool, modern React web interface, and REST API
-- **Resource-Specific Permissions**: Generate precise ARN patterns instead of wildcard permissions
+- **Enhanced Analysis Modes**: 
+  - Standard batch analysis with comprehensive summaries
+  - Resource-specific policy generation with precise ARN targeting
+  - Least privilege optimization with security conditions
+  - Service usage analysis with detailed breakdowns
 - **Smart Role Generation**: Create complete IAM roles with appropriate trust policies
 - **Multiple Output Formats**: Terraform, CloudFormation, AWS CLI, JSON, and YAML support
-- **Batch Processing**: Analyze multiple commands simultaneously with detailed reporting
-- **Least Privilege Analysis**: Optimize permissions for minimal access requirements
-- **Production Ready**: Fully containerized with Docker and Docker Compose
+- **Advanced Web Interface**: Modern React frontend with enhanced batch analyzer and hot-reload development
+- **Production Ready**: Fully containerized with Docker and Docker Compose support
+- **Security Best Practices**: Automatic security condition injection and least privilege enforcement
 
 ## 🚀 Architecture Overview
 
@@ -68,6 +72,11 @@ make start
 # Development environment
 make dev
 # OR: docker-compose -f docker-compose.dev.yml up -d
+
+# 🔥 HOT RELOAD FEATURES:
+# Backend: Automatic Python code reloading with uvicorn --reload
+# Frontend: Vite HMR (Hot Module Replacement) for instant updates
+# Volume mounts: ./backend/app:/app/app and ./backend/iam_generator:/app/iam_generator
 
 # View service status
 make status
@@ -151,30 +160,73 @@ iam-generator batch-analyze commands.txt --output-dir ./results
 
 ## 🔧 Advanced Features
 
-### Resource-Specific Permission Analysis
-The tool can generate specific ARN patterns when resource identifiers are provided:
+### Enhanced Analysis Modes (✅ Fully Implemented)
+The tool now supports multiple analysis modes through both CLI and web interface:
+
+#### 1. Resource-Specific Policy Generation
+Generate policies with specific ARN patterns instead of wildcards:
 
 ```bash
-# Instead of s3:GetObject on "*", generates specific bucket ARNs
+# CLI usage
 iam-generator analyze s3 cp s3://my-bucket/file.txt ./local-file
-
-# Generates EC2 instance-specific permissions when instance IDs provided
 iam-generator analyze ec2 terminate-instances --instance-ids i-1234567890abcdef0
+
+# API usage
+curl -X POST "http://localhost:8000/analyze-resource-specific" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": ["aws s3 ls s3://my-bucket", "aws ec2 describe-instances --instance-ids i-1234567890abcdef0"],
+    "account_id": "123456789012",
+    "region": "us-east-1",
+    "strict_mode": true
+  }'
 ```
 
-### Least Privilege Policy Generation
+#### 2. Least Privilege Policy Optimization
+Generate minimal required permissions with enhanced security conditions:
+
 ```bash
-# Optimize multiple commands for minimal permissions
+# CLI usage
 iam-generator generate-role \
   --role-name OptimizedRole \
   --least-privilege \
   s3 ls s3://bucket \
   s3 cp s3://bucket/file.txt ./file \
   ec2 describe-instances
+
+# API usage
+curl -X POST "http://localhost:8000/analyze-least-privilege" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": ["aws s3 ls s3://my-bucket", "aws ec2 describe-instances"],
+    "account_id": "123456789012",
+    "region": "us-east-1"
+  }'
 ```
 
-### Service Summary Analysis
+#### 3. Service Usage Summary Analysis
+Get comprehensive breakdown of AWS services, actions, and permissions:
+
 ```bash
+# CLI usage
+iam-generator service-summary \
+  s3 ls s3://bucket \
+  ec2 describe-instances \
+  lambda list-functions
+
+# API usage
+curl -X POST "http://localhost:8000/service-summary" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": ["aws s3 ls s3://my-bucket", "aws ec2 describe-instances", "aws lambda list-functions"]
+  }'
+```
+
+### Enhanced Web Interface Features
+- **Interactive Analysis Modes**: Switch between standard, resource-specific, least privilege, and service summary analysis
+- **Real-time Results**: View detailed policy documents, metadata, and statistics
+- **Export Capabilities**: Download generated policies in multiple formats
+- **Hot Reload Development**: Full development environment with automatic code reloading
 # Get comprehensive service usage analysis
 iam-generator service-summary \
   s3 ls s3://bucket \
@@ -239,16 +291,24 @@ iam-generator analyze --output yaml ec2 describe-instances
 ### Project Structure
 ```
 iam_generator/
-├── src/iam_generator/          # Core Python package
-│   ├── analyzer.py             # Permission analysis engine
-│   ├── parser.py               # AWS CLI command parser
-│   ├── permissions_db.py       # Permission database (52 services)
-│   ├── role_generator.py       # IAM role generator
-│   └── cli.py                  # CLI interface
+├── backend/                    # Python backend
+│   ├── iam_generator/          # Core Python package
+│   │   ├── analyzer.py         # Permission analysis engine
+│   │   ├── parser.py           # AWS CLI command parser
+│   │   ├── permissions_db.py   # Permission database (52 services)
+│   │   ├── role_generator.py   # IAM role generator
+│   │   └── cli.py              # CLI interface
+│   ├── app/                    # FastAPI web application
+│   │   ├── main.py             # FastAPI app setup
+│   │   ├── models.py           # API schemas
+│   │   ├── services.py         # Business logic
+│   │   ├── routers/            # API endpoints
+│   │   └── core/               # Configuration
+│   ├── requirements.txt        # Python dependencies
+│   └── README.md               # Backend documentation
 ├── frontend/                   # React TypeScript frontend
 │   ├── src/components/         # UI components (shadcn/ui)
 │   └── src/lib/               # API client and utilities
-├── backend_server.py           # FastAPI REST API server
 ├── tests/                      # Comprehensive test suite
 ├── docker-compose.yml          # Production deployment
 ├── docker-compose.dev.yml      # Development environment
@@ -259,30 +319,38 @@ iam_generator/
 ### Running Tests
 ```bash
 # Run full test suite
-pytest
+PYTHONPATH=backend pytest
 
 # Run specific test categories
-pytest tests/test_analyzer.py      # Core analysis tests
-pytest tests/test_parser.py        # CLI parsing tests
-pytest tests/test_permissions_db.py # Database tests
-pytest tests/test_integration.py   # Integration tests
+PYTHONPATH=backend pytest tests/test_analyzer.py      # Core analysis tests
+PYTHONPATH=backend pytest tests/test_parser.py        # CLI parsing tests
+PYTHONPATH=backend pytest tests/test_permissions_db.py # Database tests
+PYTHONPATH=backend pytest tests/test_integration.py   # Integration tests
 
 # Run with coverage
-pytest --cov=iam_generator --cov-report=html
+PYTHONPATH=backend pytest --cov=iam_generator --cov-report=html
 ```
 
 ### API Endpoints
 
 The FastAPI backend provides these endpoints:
 
-- `GET /services` - List supported AWS services
+**Core Analysis:**
 - `POST /analyze` - Analyze single AWS CLI command
+- `POST /batch-analyze` - Analyze multiple commands with comprehensive results
 - `POST /generate-role` - Generate IAM role configuration  
-- `POST /batch-analyze` - Analyze multiple commands
-- `POST /analyze-resource-specific` - Generate resource-specific policies
-- `POST /analyze-least-privilege` - Generate minimal permission policies
-- `POST /service-summary` - Get service usage summary
+- `GET /services` - List supported AWS services
+
+**Enhanced Analysis (✅ Fully Implemented):**
+- `POST /analyze-resource-specific` - Generate resource-specific policies with precise ARNs
+- `POST /analyze-least-privilege` - Generate minimal permission policies with security conditions
+- `POST /service-summary` - Get detailed service usage summary and statistics
+
+**Utility:**
 - `GET /health` - Health check endpoint
+- `GET /docs` - Interactive API documentation (Swagger UI)
+
+All endpoints support comprehensive request/response validation and detailed error handling.
 
 ## 🔒 Trust Policy Types
 
@@ -385,7 +453,7 @@ This project is proprietary software. All rights reserved. See the [LICENSE](LIC
 
 ## 🚀 Roadmap
 
-**✅ Recently Completed:**
+**✅ Recently Completed (2025):**
 - ✅ Support for 52 AWS services with 300+ commands
 - ✅ Modern React web interface with shadcn/ui components
 - ✅ FastAPI REST API backend with comprehensive endpoints
@@ -394,8 +462,12 @@ This project is proprietary software. All rights reserved. See the [LICENSE](LIC
 - ✅ Resource-specific ARN generation for enhanced security
 - ✅ Docker containerization with production-ready deployment
 - ✅ Comprehensive test suite with CI/CD integration
+- ✅ **Enhanced Analysis Features**: Resource-specific policies, least privilege optimization, service summaries
+- ✅ **Hot Reload Development Environment**: Full Docker development stack with automatic code reloading
+- ✅ **Advanced Web Interface**: Enhanced batch analyzer with multiple analysis modes
+- ✅ **Complete Enhanced Analysis Implementation**: All advanced endpoints fully functional with real data analysis
 
-**🚀 Next Phase - Enhanced Features:**
+**🚀 Next Phase - Advanced Features:**
 - [ ] **Conditional IAM policies**: Add support for IAM conditions based on command parameters
 - [ ] **Policy validation engine**: Check policies against AWS limits and best practices
 - [ ] **Cross-service dependency analysis**: Auto-include dependent permissions
@@ -404,6 +476,8 @@ This project is proprietary software. All rights reserved. See the [LICENSE](LIC
 - [ ] **Custom permission mappings**: User-defined service definitions
 - [ ] **Policy optimization**: Merge similar permissions and reduce complexity
 - [ ] **Audit and compliance reports**: Generate security compliance documentation
+- [ ] **Multi-account support**: Enhanced cross-account access patterns
+- [ ] **CloudFormation template generation**: Direct infrastructure-as-code output
 
 ---
 

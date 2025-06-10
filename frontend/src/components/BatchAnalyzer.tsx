@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Download, Copy, AlertCircle, CheckCircle2, Upload, BarChart3, Layers } from 'lucide-react'
 
 interface BatchResult {
-  command: string
+  original_command: string
   service: string
   action: string
   required_permissions: Array<{
@@ -22,12 +22,10 @@ interface BatchAnalysisResult {
   results: BatchResult[]
   summary: {
     total_commands: number
-    services_used: string[]
+    unique_services: number
+    unique_actions: number
     total_permissions: number
-    unique_permissions: Array<{
-      action: string
-      resource: string
-    }>
+    services_used: string[]
   }
   combined_policy: any
 }
@@ -210,10 +208,9 @@ aws iam list-users`}
           </CardHeader>
           <CardContent className="p-6">
             <Tabs defaultValue="summary" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-aws-gray-50 p-1 h-12">
+              <TabsList className="grid w-full grid-cols-3 bg-aws-gray-50 p-1 h-12">
                 <TabsTrigger value="summary" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">Summary</TabsTrigger>
                 <TabsTrigger value="commands" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">Commands</TabsTrigger>
-                <TabsTrigger value="permissions" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">Permissions</TabsTrigger>
                 <TabsTrigger value="policy" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">Combined Policy</TabsTrigger>
               </TabsList>
 
@@ -232,8 +229,8 @@ aws iam list-users`}
                     <div className="text-sm text-purple-600">Total Permissions</div>
                   </Card>
                   <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                    <div className="text-2xl font-bold text-orange-800">{result.summary.unique_permissions.length}</div>
-                    <div className="text-sm text-orange-600">Unique Permissions</div>
+                    <div className="text-2xl font-bold text-orange-800">{result.summary.unique_actions}</div>
+                    <div className="text-sm text-orange-600">Unique Actions</div>
                   </Card>
                 </div>
 
@@ -260,7 +257,7 @@ aws iam list-users`}
                           <Badge variant="outline" className="border-aws-gray-300">{cmdResult.action}</Badge>
                         </div>
                         <code className="text-sm bg-aws-gray-900 text-green-400 p-3 rounded-lg font-mono block overflow-x-auto">
-                          {cmdResult.command}
+                          {cmdResult.original_command}
                         </code>
                       </CardHeader>
                       <CardContent>
@@ -290,38 +287,6 @@ aws iam list-users`}
                           )}
                         </div>
                       </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="permissions" className="mt-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-aws-gray-900">Unique Permissions</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(JSON.stringify(result.summary.unique_permissions, null, 2))}
-                    className="hover:bg-aws-gray-50 border-aws-gray-200"
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Permissions
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {result.summary.unique_permissions.map((perm, index) => (
-                    <Card key={index} className="p-4 border-l-4 border-l-green-400 bg-gradient-to-r from-green-50/50 to-transparent">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-green-600 text-white">{perm.action}</Badge>
-                        </div>
-                        <div className="text-sm text-aws-gray-700">
-                          <strong>Resource:</strong> 
-                          <code className="ml-2 bg-aws-gray-100 text-aws-gray-800 px-2 py-1 rounded font-mono text-xs">
-                            {perm.resource}
-                          </code>
-                        </div>
-                      </div>
                     </Card>
                   ))}
                 </div>

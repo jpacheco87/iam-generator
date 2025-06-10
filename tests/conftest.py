@@ -2,8 +2,14 @@
 Test configuration and fixtures for IAM Generator tests.
 """
 
+import sys
+from pathlib import Path
 import pytest
 from typing import Dict, Any
+
+# Add backend directory to Python path for testing
+backend_path = Path(__file__).parent.parent / "backend"
+sys.path.insert(0, str(backend_path))
 
 
 @pytest.fixture

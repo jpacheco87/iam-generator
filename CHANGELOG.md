@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2025-06-10
+
+### Added
+- **Enhanced Analysis Functionality**: Complete implementation of advanced analysis endpoints
+  - **Resource-Specific Policy Generation**: Generate policies with precise ARN targeting instead of wildcards
+  - **Least Privilege Optimization**: Create minimal permission policies with enhanced security conditions
+  - **Service Usage Summary**: Comprehensive breakdown of AWS services, actions, and resources
+- **Hot Reload Development Environment**: Full Docker development stack with automatic code reloading
+  - Backend hot reload with uvicorn `--reload` and file change monitoring
+  - Frontend hot reload with Vite HMR (Hot Module Replacement)
+  - Development-specific Docker Compose configuration with volume mounts
+- **Enhanced Web Interface**: Advanced batch analyzer with multiple analysis modes
+  - Interactive mode switching between standard, resource-specific, least privilege, and service summary
+  - Real-time policy generation and metadata viewing
+  - Fixed type compatibility issues between frontend and backend APIs
+  - Improved user experience with better error handling and responsive design
+
+### Enhanced
+- **Backend API Endpoints**: All advanced router endpoints now call actual analyzer methods
+  - `/analyze-resource-specific`: Returns policies with specific ARNs like `arn:aws:s3:::my-bucket`
+  - `/analyze-least-privilege`: Returns optimized policies with security conditions
+  - `/service-summary`: Returns detailed service breakdowns with comprehensive statistics
+- **Frontend Components**: Fixed batch analysis functionality and improved type safety
+  - Resolved command vs original_command field mismatches
+  - Updated API interfaces to match backend response structure
+  - Enhanced BatchAnalyzer component with proper error handling
+- **Development Workflow**: Streamlined development process with working hot reload
+  - Backend automatically reloads on Python file changes
+  - Frontend automatically updates on TypeScript/React changes
+  - Improved Docker entrypoint script with reload detection
+
+### Fixed
+- **Batch Analysis Blank Page Issue**: Resolved type mismatches causing UI rendering failures
+- **Enhanced Analysis Endpoints**: Fixed stub implementations that were returning placeholder data
+- **API Response Structure**: Aligned frontend interfaces with backend response formats
+- **Docker Development Environment**: Proper volume mounts and environment configuration
+
+### Validated
+- **All Enhanced Analysis Modes**: Confirmed working with real data analysis
+- **Hot Reload Functionality**: Verified both backend and frontend automatic reloading
+- **Docker Development Stack**: Full development environment working correctly
+- **API Endpoint Integration**: All advanced endpoints returning actual analysis results
+
 ## [2.1.0] - 2025-06-09
 
 ### Added

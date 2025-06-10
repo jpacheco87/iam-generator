@@ -1,3 +1,0 @@
-aws s3 ls s3://my-bucket
-aws bedrock-runtime invoke-model --model-id claude-3
-aws ec2 describe-instances

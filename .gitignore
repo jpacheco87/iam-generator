@@ -277,6 +277,18 @@ iam-analysis/*.csv
 iam-analysis/*.xlsx
 !iam-analysis/README.md
 
+# Backend specific
+backend/app/main_old.py
+
+# IAM Generator specific cleanup patterns
+simple_test.txt
+test_debug.txt
+test_mixed_commands.txt
+test_auto_discovery_batch.txt
+auto_discovery_cache.json
+*_UPDATE_REPORT.md
+*_INTEGRATION_REPORT.md
+
 # Test outputs and coverage
 test-results/
 test-reports/

@@ -20,7 +20,7 @@ chmod +x docker-manager.sh
 # Build and start production environment
 ./docker-manager.sh start
 
-# Or start development environment with hot reloading
+# Or start development environment with hot reloading 🔥
 ./docker-manager.sh dev
 ```
 
@@ -30,9 +30,21 @@ chmod +x docker-manager.sh
 # Production environment
 docker-compose up -d
 
-# Development environment
+# Development environment with hot reload 🔥
 docker-compose -f docker-compose.dev.yml up -d
 ```
+
+## 🔥 Development Environment Features
+
+The development setup includes advanced hot reload capabilities:
+
+- **Backend Hot Reload**: Automatic Python code reloading with uvicorn `--reload`
+- **Frontend Hot Reload**: Vite HMR (Hot Module Replacement) for instant updates
+- **Volume Mounts**: Live code editing without container rebuilds
+  - `./backend/app:/app/app`
+  - `./backend/iam_generator:/app/iam_generator`
+  - `./tests:/app/tests`
+- **Debug Logging**: Enhanced logging for development troubleshooting
 
 ## 🌐 Access Points
 

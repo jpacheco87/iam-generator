@@ -6,9 +6,13 @@ A modern React frontend for the AWS CLI IAM Permissions Analyzer tool, built wit
 
 - **Command Analysis**: Analyze single AWS CLI commands to extract required IAM permissions
 - **Role Generation**: Generate complete IAM roles with trust policies and permission policies
-- **Batch Processing**: Analyze multiple commands at once
+- **Standard Batch Processing**: Analyze multiple commands at once with comprehensive summaries
+- **Enhanced Batch Analysis** ✨ **FULLY IMPLEMENTED**: Advanced analysis modes including:
+  - **Resource-Specific Analysis**: Generate policies with precise ARNs instead of wildcards
+  - **Least Privilege Optimization**: Create minimal permission policies with security conditions
+  - **Service Usage Summary**: Detailed breakdown of AWS services, actions, and permissions
 - **Multiple Output Formats**: Support for JSON, Terraform, CloudFormation, and AWS CLI outputs
-- **Real-time Analysis**: Interactive interface with real-time feedback
+- **Real-time Analysis**: Interactive interface with real-time feedback and hot reload development
 - **Modern UI**: Built with shadcn/ui components for a clean, professional interface
 
 ## Tech Stack
@@ -77,12 +81,25 @@ python backend_server.py
 4. Click "Generate Role"
 5. Download or copy the generated configuration
 
-### 3. Batch Analysis
+### 3. Standard Batch Analysis
 
 1. Open the "Batch Analysis" tab
 2. Enter multiple AWS CLI commands (one per line)
 3. Click "Analyze Batch"
 4. View comprehensive analysis results and summary
+
+### 4. Enhanced Batch Analysis ✨ **NEW**
+
+1. Open the "Enhanced Batch Analysis" tab
+2. Choose analysis mode:
+   - **Standard**: Traditional batch analysis with summaries
+   - **Resource-Specific**: Generate policies with precise ARNs (e.g., `arn:aws:s3:::my-bucket`)
+   - **Least Privilege**: Optimized policies with security conditions
+   - **Service Summary**: Detailed service usage breakdown
+3. Configure advanced options (Account ID, Region, Strict Mode)
+4. Enter multiple AWS CLI commands (one per line)
+5. Click "Analyze Commands"
+6. View real-time results with enhanced metadata and policy documents
 
 ## Project Structure
 
@@ -92,10 +109,11 @@ frontend/
 │   ├── components/
 │   │   ├── CommandAnalyzer.tsx    # Single command analysis
 │   │   ├── RoleGenerator.tsx      # IAM role generation
-│   │   ├── BatchAnalyzer.tsx      # Batch command analysis
+│   │   ├── BatchAnalyzer.tsx      # Standard batch command analysis
+│   │   ├── EnhancedBatchAnalyzer.tsx  # ✨ Enhanced analysis modes
 │   │   └── ui/                    # shadcn/ui components
 │   ├── lib/
-│   │   ├── api.ts                 # API client for backend communication
+│   │   ├── api.ts                 # API client with enhanced endpoints
 │   │   └── utils.ts               # Utility functions
 │   ├── App.tsx                    # Main application component
 │   └── main.tsx                   # Application entry point
@@ -127,11 +145,17 @@ npx shadcn@latest add [component-name]
 
 The frontend communicates with these backend endpoints:
 
+**Core Analysis:**
 - `GET /health` - Health check
-- `GET /services` - Get supported AWS services
+- `GET /services` - Get supported AWS services  
 - `POST /analyze` - Analyze single command
 - `POST /batch-analyze` - Analyze multiple commands
 - `POST /generate-role` - Generate IAM role
+
+**Enhanced Analysis** ✨ **FULLY IMPLEMENTED:**
+- `POST /analyze-resource-specific` - Resource-specific policy generation with precise ARNs
+- `POST /analyze-least-privilege` - Least privilege optimization with security conditions
+- `POST /service-summary` - Service usage summary with detailed breakdowns
 
 ## Styling
 

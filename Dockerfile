@@ -22,8 +22,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Copy dependency files
-COPY requirements.txt setup.py ./
-COPY src/ ./src/
+COPY backend/requirements.txt ./
+COPY backend/setup.py ./
+COPY backend/iam_generator/ ./iam_generator/
+COPY backend/app/ ./app/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt && \
@@ -35,7 +37,7 @@ FROM python:3.11-slim as production
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/src \
+    PYTHONPATH=/app \
     PORT=8000
 
 # Create app user
@@ -54,8 +56,8 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser backend_server.py ./
+COPY --chown=appuser:appuser backend/iam_generator/ ./iam_generator/
+COPY --chown=appuser:appuser backend/app/ ./app/
 COPY --chown=appuser:appuser docker-entrypoint.sh ./
 
 # Make entrypoint script executable

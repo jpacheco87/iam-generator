@@ -7,8 +7,7 @@ setup(
     author="IAM Generator Team",
     author_email="team@iamgenerator.dev",
     license="Proprietary",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[
         "boto3>=1.34.0",

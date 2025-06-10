@@ -8,36 +8,61 @@ You now have a complete AWS IAM permissions analyzer with:
 
 ✅ **Modern React Frontend** - Built with shadcn/ui components and Tailwind CSS
 ✅ **FastAPI Backend** - RESTful API that wraps your existing Python CLI tool
-✅ **Three Analysis Modes**:
-   - Single command analysis
-   - IAM role generation
-   - Batch command processing
+✅ **Enhanced Analysis Modes**:
+   - Single command analysis with detailed breakdowns
+   - IAM role generation with multiple output formats
+   - Standard batch command processing
+   - **Resource-specific policy generation** with precise ARN targeting
+   - **Least privilege optimization** with security conditions
+   - **Service usage analysis** with comprehensive breakdowns
 ✅ **Multiple Output Formats** - JSON, Terraform, CloudFormation, AWS CLI
-✅ **Real-time Analysis** - Interactive web interface
-✅ **Professional UI** - Clean, responsive design
+✅ **Real-time Analysis** - Interactive web interface with hot-reload development
+✅ **Professional UI** - Clean, responsive design with enhanced batch analyzer
+✅ **Production Ready** - Docker containerization with full development environment
 
 ## Quick Start
 
-### Option 1: Use the Launch Script (Recommended)
+### Option 1: Docker Development Environment (Recommended) 🔥
 ```bash
-./start.sh
+# Start development environment with hot reload
+make dev
+# OR: docker-compose -f docker-compose.dev.yml up -d
+
+# Access services:
+# Frontend: http://localhost:3000 (with HMR - Hot Module Replacement)
+# Backend: http://localhost:8000 (with auto-reload on Python changes)
+# API Docs: http://localhost:8000/docs
+
+# 🔥 HOT RELOAD FEATURES:
+# - Backend automatically reloads when you edit Python files in backend/app/ or backend/iam_generator/
+# - Frontend automatically updates when you edit React/TypeScript files in frontend/src/
+# - Volume mounts enable live code editing without container rebuilds
+# - Debug logging enabled for comprehensive development feedback
 ```
-This will start both servers and open the web interface.
 
-### Option 2: Start Services Individually
-
-1. **Start the Backend:**
+### Option 2: Docker Production Environment
 ```bash
-python backend_server.py
+# Start production environment
+make start
+# OR: docker-compose up -d
+
+# Access services:
+# Web UI: http://localhost:3000
+# API: http://localhost:8000
 ```
-Backend runs on: http://localhost:8000
 
-2. **Start the Frontend:**
+### Option 3: Local Development
 ```bash
+# Terminal 1: Start Backend
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Terminal 2: Start Frontend
 cd frontend
+npm install
 npm run dev
 ```
-Frontend runs on: http://localhost:3000
 
 ## Usage Examples
 
@@ -88,7 +113,7 @@ curl -X POST "http://localhost:8000/generate-role" \
   }'
 ```
 
-**Batch Analysis:**
+**Standard Batch Analysis:**
 ```bash
 curl -X POST "http://localhost:8000/batch-analyze" \
   -H "Content-Type: application/json" \
@@ -99,6 +124,62 @@ curl -X POST "http://localhost:8000/batch-analyze" \
       "aws ec2 describe-instances"
     ]
   }'
+```
+
+**Enhanced Analysis - Resource-Specific:**
+```bash
+curl -X POST "http://localhost:8000/analyze-resource-specific" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": [
+      "aws s3 ls s3://my-bucket",
+      "aws ec2 describe-instances --instance-ids i-1234567890abcdef0"
+    ],
+    "account_id": "123456789012",
+    "region": "us-east-1",
+    "strict_mode": true
+  }'
+
+# Returns policies with specific ARNs:
+# "Resource": "arn:aws:s3:::my-bucket"
+# "Resource": "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0"
+```
+
+**Enhanced Analysis - Least Privilege:**
+```bash
+curl -X POST "http://localhost:8000/analyze-least-privilege" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": [
+      "aws s3 ls s3://my-bucket",
+      "aws ec2 describe-instances"
+    ],
+    "account_id": "123456789012",
+    "region": "us-east-1"
+  }'
+
+# Returns optimized policies with security conditions:
+# "Condition": {"Bool": {"aws:SecureTransport": "true"}}
+# Minimal required permissions with enhanced security
+```
+
+**Enhanced Analysis - Service Summary:**
+```bash
+curl -X POST "http://localhost:8000/service-summary" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": [
+      "aws s3 ls s3://my-bucket",
+      "aws ec2 describe-instances",
+      "aws lambda list-functions"
+    ]
+  }'
+
+# Returns detailed service breakdown:
+# - Service-specific analysis (S3, EC2, Lambda)
+# - Actions and permissions per service
+# - Resource patterns and usage statistics
+# - Comprehensive policy document generation
 ```
 
 ### 3. CLI (Original Tool)
@@ -121,22 +202,34 @@ iam-generator batch-analyze commands.txt
 ## Key Features to Explore
 
 ### 1. Command Analysis Tab
-- Enter AWS CLI commands
-- View required permissions in a clean table
-- See the generated IAM policy document
-- Check resource ARNs and warnings
+- Enter AWS CLI commands for detailed analysis
+- View required permissions in a clean, organized table
+- See the generated IAM policy document with syntax highlighting
+- Check specific resource ARNs and security warnings
+- Export results in multiple formats
 
 ### 2. Role Generator Tab
-- Generate complete IAM roles
+- Generate complete IAM roles with comprehensive configurations
 - Choose trust policy types (EC2, Lambda, ECS, Cross-account)
-- Export in multiple formats (Terraform, CloudFormation, etc.)
-- Configure role names and account IDs
+- Export in multiple formats (JSON, Terraform, CloudFormation, AWS CLI)
+- Configure role names, account IDs, and descriptions
+- Download or copy generated configurations
 
-### 3. Batch Analysis Tab
-- Analyze multiple commands at once
-- Get comprehensive summaries
-- See service usage patterns
-- Export batch results
+### 3. Standard Batch Analysis Tab
+- Analyze multiple commands simultaneously
+- Get comprehensive summaries with statistics
+- View detailed results for each command
+- See combined policy documents
+- Export batch results and summaries
+
+### 4. Enhanced Batch Analysis Tab ✨ **FULLY IMPLEMENTED**
+- **Multiple Analysis Modes**: Choose from standard, resource-specific, least privilege, or service summary
+- **Resource-Specific Analysis**: Generate policies with precise ARNs like `arn:aws:s3:::my-bucket` instead of wildcards
+- **Least Privilege Optimization**: Get minimal required permissions with enhanced security conditions like `"aws:SecureTransport":"true"`
+- **Service Usage Summary**: Detailed breakdown of AWS services (S3, EC2, Lambda) with actions, permissions, and resources
+- **Advanced Configuration**: Set AWS account ID, region, and strict mode options
+- **Real-time Results**: Interactive viewing of generated policies and comprehensive metadata
+- **Verified Functionality**: All endpoints now return actual analysis data (no longer placeholder/stub data)
 
 ## Project Structure
 
