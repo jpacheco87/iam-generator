@@ -34,6 +34,16 @@ class RoleGenerationRequest(BaseModel):
     debug: bool = False
 
 
+class RoleGenerationAllFormatsRequest(BaseModel):
+    """Request model for IAM role generation with all formats."""
+    command: str
+    role_name: str
+    trust_policy: Optional[str] = None
+    account_id: Optional[str] = None
+    description: Optional[str] = None
+    debug: bool = False
+
+
 class RoleConfigResponse(BaseModel):
     """Response model for IAM role configuration."""
     role_name: str

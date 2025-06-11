@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Settings, Download, Copy, AlertCircle, CheckCircle2, Shield, FileText, Code } from 'lucide-react'
+import { Settings, Download, Copy, AlertCircle, CheckCircle2, Shield, FileText, Code, Terminal } from 'lucide-react'
+import { generateRoleAllFormats } from '@/lib/api'
 
 interface RoleConfig {
   role_name: string
@@ -16,21 +17,10 @@ interface RoleConfig {
   aws_cli_commands?: string[]
 }
 
-interface Props {
-  onGenerateRole: (params: {
-    command: string
-    roleName: string
-    trustPolicy: string
-    outputFormat: string
-    accountId?: string
-  }) => Promise<RoleConfig>
-}
-
-export function RoleGenerator({ onGenerateRole }: Props) {
+export function RoleGenerator() {
   const [command, setCommand] = useState('')
   const [roleName, setRoleName] = useState('GeneratedRole')
   const [trustPolicy, setTrustPolicy] = useState('ec2')
-  const [outputFormat, setOutputFormat] = useState('json')
   const [accountId, setAccountId] = useState('')
   const [result, setResult] = useState<RoleConfig | null>(null)
   const [loading, setLoading] = useState(false)
@@ -41,13 +31,6 @@ export function RoleGenerator({ onGenerateRole }: Props) {
     { value: 'lambda', label: 'Lambda Service', description: 'For Lambda function execution roles' },
     { value: 'ecs', label: 'ECS Service', description: 'For ECS task execution roles' },
     { value: 'cross-account', label: 'Cross-Account', description: 'For cross-account access' }
-  ]
-
-  const outputFormatOptions = [
-    { value: 'json', label: 'JSON', description: 'Standard JSON format' },
-    { value: 'terraform', label: 'Terraform', description: 'Terraform HCL configuration' },
-    { value: 'cloudformation', label: 'CloudFormation', description: 'AWS CloudFormation template' },
-    { value: 'aws-cli', label: 'AWS CLI', description: 'Ready-to-run AWS CLI commands' }
   ]
 
   const handleGenerate = async () => {
@@ -61,12 +44,11 @@ export function RoleGenerator({ onGenerateRole }: Props) {
     setLoading(true)
     setError(null)
     try {
-      const roleConfig = await onGenerateRole({
+      const roleConfig = await generateRoleAllFormats({
         command: command.trim(),
-        roleName: roleName.trim(),
-        trustPolicy,
-        outputFormat,
-        accountId: accountId.trim() || undefined
+        role_name: roleName.trim(),
+        trust_policy: trustPolicy,
+        account_id: accountId.trim() || undefined
       })
       setResult(roleConfig)
     } catch (err) {
@@ -183,27 +165,6 @@ export function RoleGenerator({ onGenerateRole }: Props) {
             </div>
           </div>
 
-          {/* Output Format Options */}
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-aws-gray-900">Output Format</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {outputFormatOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 text-center ${
-                    outputFormat === option.value
-                      ? 'border-aws-blue bg-blue-50 shadow-md'
-                      : 'border-aws-gray-200 bg-white hover:border-aws-gray-300 hover:shadow-sm'
-                  }`}
-                  onClick={() => setOutputFormat(option.value)}
-                >
-                  <div className="font-medium text-aws-gray-900 text-sm">{option.label}</div>
-                  <div className="text-xs text-aws-gray-600 mt-1">{option.description}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <Button 
             onClick={handleGenerate} 
             disabled={loading || !command.trim() || !roleName.trim()}
@@ -245,7 +206,7 @@ export function RoleGenerator({ onGenerateRole }: Props) {
           </CardHeader>
           <CardContent className="p-6">
             <Tabs defaultValue="trust-policy" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-aws-gray-50 p-1 h-12">
+              <TabsList className="grid w-full grid-cols-5 bg-aws-gray-50 p-1 h-12">
                 <TabsTrigger value="trust-policy" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">
                   <Shield className="h-4 w-4 mr-2" />
                   Trust Policy
@@ -261,6 +222,10 @@ export function RoleGenerator({ onGenerateRole }: Props) {
                 <TabsTrigger value="cloudformation" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">
                   <Code className="h-4 w-4 mr-2" />
                   CloudFormation
+                </TabsTrigger>
+                <TabsTrigger value="aws-cli" className="data-[state=active]:bg-white data-[state=active]:text-aws-gray-900 data-[state=active]:shadow-sm transition-all duration-200">
+                  <Terminal className="h-4 w-4 mr-2" />
+                  AWS CLI
                 </TabsTrigger>
               </TabsList>
 
@@ -393,6 +358,39 @@ export function RoleGenerator({ onGenerateRole }: Props) {
                 </div>
                 <pre className="bg-aws-gray-900 text-yellow-400 p-4 rounded-lg overflow-auto text-sm font-mono border shadow-inner">
                   {result.cloudformation_config || 'CloudFormation template not available'}
+                </pre>
+              </TabsContent>
+
+              <TabsContent value="aws-cli" className="mt-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-aws-gray-900">AWS CLI Commands</h3>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(result.aws_cli_commands?.join('\n') || '')}
+                      className="hover:bg-aws-gray-50 border-aws-gray-200"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadFile(
+                        result.aws_cli_commands?.join('\n') || '',
+                        `${result.role_name}-commands.sh`,
+                        'text/plain'
+                      )}
+                      className="hover:bg-aws-gray-50 border-aws-gray-200"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                <pre className="bg-aws-gray-900 text-orange-400 p-4 rounded-lg overflow-auto text-sm font-mono border shadow-inner">
+                  {result.aws_cli_commands?.join('\n') || 'AWS CLI commands not available'}
                 </pre>
               </TabsContent>
             </Tabs>

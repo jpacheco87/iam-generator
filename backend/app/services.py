@@ -84,22 +84,41 @@ class IAMGeneratorService:
             # First analyze the command
             analysis = self.analyze_command(command, debug)
             
-            # Generate role configuration
-            role_config = self.role_generator.generate_role(
+            # Generate role configuration using the role generator's expected interface
+            result = self.role_generator.generate_role(
+                analysis_result=analysis,
                 role_name=role_name,
-                permissions=analysis['required_permissions'],
-                trust_policy=trust_policy,
+                trust_policy_type=trust_policy or "default",
+                output_format=output_format,
                 description=description,
                 account_id=account_id
             )
             
-            # Add format-specific configurations
+            # Extract the result for the requested format
             if output_format == "terraform":
-                role_config['terraform_config'] = self._generate_terraform_config(role_config)
+                return {
+                    'role_name': role_name,
+                    'trust_policy': result['json']['trust_policy'],
+                    'permissions_policy': result['json']['permissions_policy'],
+                    'terraform_config': result['terraform']
+                }
             elif output_format == "cloudformation":
-                role_config['cloudformation_config'] = self._generate_cloudformation_config(role_config)
-            
-            return role_config
+                return {
+                    'role_name': role_name,
+                    'trust_policy': result['json']['trust_policy'],
+                    'permissions_policy': result['json']['permissions_policy'],
+                    'cloudformation_config': json.dumps(result['cloudformation'], indent=2)
+                }
+            elif output_format == "aws_cli":
+                return {
+                    'role_name': role_name,
+                    'trust_policy': result['json']['trust_policy'],
+                    'permissions_policy': result['json']['permissions_policy'],
+                    'aws_cli_commands': result['aws_cli']
+                }
+            else:
+                # Default JSON format
+                return result['json']
         except Exception as e:
             if debug:
                 raise
@@ -176,13 +195,3 @@ class IAMGeneratorService:
             'total_permissions': total_permissions,
             'services_used': list(services)
         }
-    
-    def _generate_terraform_config(self, role_config: Dict[str, Any]) -> str:
-        """Generate Terraform configuration for the role."""
-        # Placeholder for Terraform generation
-        return f"# Terraform configuration for {role_config['role_name']}"
-    
-    def _generate_cloudformation_config(self, role_config: Dict[str, Any]) -> str:
-        """Generate CloudFormation configuration for the role."""
-        # Placeholder for CloudFormation generation
-        return f"# CloudFormation configuration for {role_config['role_name']}"

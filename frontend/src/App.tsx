@@ -55,22 +55,6 @@ function App() {
     return await iamGeneratorApi.analyzeCommand({ command })
   }
 
-  const handleGenerateRole = async (params: {
-    command: string
-    roleName: string
-    trustPolicy: string
-    outputFormat: string
-    accountId?: string
-  }) => {
-    return await iamGeneratorApi.generateRole({
-      command: params.command,
-      role_name: params.roleName,
-      trust_policy: params.trustPolicy,
-      output_format: params.outputFormat,
-      account_id: params.accountId
-    })
-  }
-
   const handleBatchAnalyze = async (commands: string[]) => {
     return await iamGeneratorApi.batchAnalyze({ commands })
   }
@@ -314,7 +298,7 @@ function App() {
                 </TabsContent>
 
                 <TabsContent value="generate" className="mt-0 p-6 bg-white border border-aws-gray-200 rounded shadow-sm">
-                  <RoleGenerator onGenerateRole={handleGenerateRole} />
+                  <RoleGenerator />
                 </TabsContent>
 
                 <TabsContent value="batch" className="mt-0 p-6 bg-white border border-aws-gray-200 rounded shadow-sm">
