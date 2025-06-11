@@ -109,3 +109,78 @@ class ServicesResponse(BaseModel):
     """Response model for supported services."""
     services: List[str]
     total_count: int
+
+
+class PolicyValidationRequest(BaseModel):
+    """Request model for policy validation."""
+    policy: Dict[str, Any]
+    policy_type: str = "managed"  # managed, inline_user, inline_role, inline_group
+    account_id: Optional[str] = None
+    debug: bool = False
+
+
+class ValidationIssueModel(BaseModel):
+    """Model for validation issues."""
+    severity: str
+    category: str
+    message: str
+    location: Optional[str] = None
+    suggestion: Optional[str] = None
+    code: Optional[str] = None
+
+
+class PolicyValidationResponse(BaseModel):
+    """Response model for policy validation."""
+    is_valid: bool
+    policy_size: int
+    policy_type: str
+    issues: List[ValidationIssueModel]
+    score: int
+    recommendations: List[str]
+
+
+class PolicyOptimizationRequest(BaseModel):
+    """Request model for policy optimization."""
+    policy: Dict[str, Any]
+    optimization_level: str = "standard"  # basic, standard, aggressive
+    account_id: Optional[str] = None
+
+
+class PolicyOptimizationResponse(BaseModel):
+    """Response model for policy optimization."""
+    original_policy: Dict[str, Any]
+    optimized_policy: Dict[str, Any]
+    size_reduction: int
+    optimizations_applied: List[str]
+    validation_result: PolicyValidationResponse
+
+
+class CrossServiceDependencyRequest(BaseModel):
+    """Request model for cross-service dependency analysis."""
+    commands: List[str]
+    include_implicit: bool = True
+    debug: bool = False
+
+
+class CrossServiceDependencyResponse(BaseModel):
+    """Response model for cross-service dependency analysis."""
+    dependencies: Dict[str, List[str]]
+    additional_permissions: List[Dict[str, Any]]
+    enhanced_policy: Dict[str, Any]
+    dependency_graph: Dict[str, Any]
+
+
+class ConditionalPolicyRequest(BaseModel):
+    """Request model for conditional policy generation."""
+    commands: List[str]
+    conditions: Dict[str, Any]  # IP restrictions, MFA requirements, etc.
+    account_id: Optional[str] = None
+    region: Optional[str] = None
+
+
+class ConditionalPolicyResponse(BaseModel):
+    """Response model for conditional policy generation."""
+    policy_document: Dict[str, Any]
+    conditions_applied: List[str]
+    security_enhancements: List[str]
+    metadata: Dict[str, Any]

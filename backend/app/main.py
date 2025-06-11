@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import API_TITLE, API_VERSION, API_DESCRIPTION, CORS_ORIGINS
-from .routers import health, analysis, roles, advanced
+from .routers import health, analysis, roles, advanced, enhanced
 
 # Create FastAPI app
 app = FastAPI(
@@ -31,6 +31,7 @@ app.include_router(health.router, tags=["Health"])
 app.include_router(analysis.router, tags=["Analysis"])
 app.include_router(roles.router, tags=["Roles"])
 app.include_router(advanced.router, tags=["Advanced"])
+app.include_router(enhanced.router, tags=["Enhanced Features"])
 
 
 if __name__ == "__main__":

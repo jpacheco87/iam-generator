@@ -509,6 +509,221 @@ def show_stats(ctx: click.Context, format: str, save: Optional[str]) -> None:
         sys.exit(1)
 
 
+@cli.command()
+@click.argument("policy_file", type=click.Path(exists=True))
+@click.option("--policy-type", "-t", 
+              type=click.Choice(["managed", "inline_user", "inline_role", "inline_group"]),
+              default="managed", help="Type of IAM policy")
+@click.option("--account-id", help="AWS account ID for validation")
+@click.option("--output", "-o", type=click.Choice(["table", "json"]), 
+              default="table", help="Output format")
+@click.option("--save", "-s", type=click.Path(), help="Save validation report to file")
+@click.pass_context
+def validate_policy(ctx: click.Context, policy_file: str, policy_type: str, 
+                   account_id: Optional[str], output: str, save: Optional[str]) -> None:
+    """
+    Validate an IAM policy against AWS limits and best practices.
+    
+    POLICY_FILE: Path to JSON file containing the IAM policy
+    
+    Examples:
+      iam-generator validate-policy policy.json
+      iam-generator validate-policy policy.json --policy-type inline_role
+      iam-generator validate-policy policy.json --account-id 123456789012
+    """
+    try:
+        from .policy_validator import IAMPolicyValidator, PolicyType
+        
+        # Read policy file
+        with open(policy_file, 'r') as f:
+            policy = json.load(f)
+        
+        if ctx.obj["verbose"]:
+            console.print(f"[blue]Validating policy from:[/blue] {policy_file}")
+            console.print(f"[blue]Policy type:[/blue] {policy_type}")
+        
+        # Validate policy
+        validator = IAMPolicyValidator()
+        policy_type_enum = PolicyType(policy_type)
+        result = validator.validate_policy(policy, policy_type_enum, account_id)
+        
+        if output == "table":
+            _display_validation_table(result, policy_file)
+        elif output == "json":
+            _display_validation_json(result)
+        
+        if save:
+            validation_data = {
+                'policy_file': policy_file,
+                'policy_type': result.policy_type.value,
+                'is_valid': result.is_valid,
+                'policy_size': result.policy_size,
+                'score': result.score,
+                'issues': [
+                    {
+                        'severity': issue.severity.value,
+                        'category': issue.category,
+                        'message': issue.message,
+                        'location': issue.location,
+                        'suggestion': issue.suggestion
+                    }
+                    for issue in result.issues
+                ],
+                'recommendations': result.recommendations
+            }
+            _save_output(validation_data, save, output)
+            console.print(f"[green]Validation report saved to:[/green] {save}")
+        
+        # Exit with non-zero code if policy has errors
+        if not result.is_valid:
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]Error validating policy:[/red] {str(e)}")
+        if ctx.obj["verbose"]:
+            import traceback
+            console.print(traceback.format_exc())
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("commands_file", type=click.Path(exists=True))
+@click.option("--include-implicit", is_flag=True, default=True, 
+              help="Include implicit cross-service dependencies")
+@click.option("--output", "-o", type=click.Choice(["table", "json"]), 
+              default="table", help="Output format")
+@click.option("--save", "-s", type=click.Path(), help="Save analysis to file")
+@click.pass_context
+def analyze_dependencies(ctx: click.Context, commands_file: str, include_implicit: bool,
+                        output: str, save: Optional[str]) -> None:
+    """
+    Analyze cross-service dependencies for multiple AWS CLI commands.
+    
+    COMMANDS_FILE: Path to file containing AWS CLI commands (one per line)
+    
+    Examples:
+      iam-generator analyze-dependencies commands.txt
+      iam-generator analyze-dependencies commands.txt --no-include-implicit
+    """
+    try:
+        from .enhanced_services import EnhancedIAMService
+        
+        # Read commands file
+        with open(commands_file, 'r') as f:
+            commands = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        
+        if ctx.obj["verbose"]:
+            console.print(f"[blue]Analyzing dependencies for {len(commands)} commands[/blue]")
+        
+        # Analyze dependencies
+        service = EnhancedIAMService()
+        result = service.analyze_cross_service_dependencies(commands, include_implicit)
+        
+        if output == "table":
+            _display_dependencies_table(result, commands_file)
+        elif output == "json":
+            _display_json_output(result)
+        
+        if save:
+            _save_output(result, save, output)
+            console.print(f"[green]Dependency analysis saved to:[/green] {save}")
+            
+    except Exception as e:
+        console.print(f"[red]Error analyzing dependencies:[/red] {str(e)}")
+        if ctx.obj["verbose"]:
+            import traceback
+            console.print(traceback.format_exc())
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("commands_file", type=click.Path(exists=True))
+@click.option("--conditions-file", type=click.Path(exists=True),
+              help="Path to JSON file containing security conditions")
+@click.option("--mfa-required", is_flag=True, help="Require MFA for sensitive operations")
+@click.option("--ip-restriction", multiple=True, help="Restrict access to specific IP addresses")
+@click.option("--account-id", help="AWS account ID")
+@click.option("--region", help="AWS region")
+@click.option("--output", "-o", type=click.Choice(["json", "terraform", "cloudformation"]), 
+              default="json", help="Output format")
+@click.option("--save", "-s", type=click.Path(), help="Save policy to file")
+@click.pass_context
+def generate_conditional_policy(ctx: click.Context, commands_file: str, conditions_file: Optional[str],
+                               mfa_required: bool, ip_restriction: tuple, account_id: Optional[str],
+                               region: Optional[str], output: str, save: Optional[str]) -> None:
+    """
+    Generate IAM policy with security conditions and restrictions.
+    
+    COMMANDS_FILE: Path to file containing AWS CLI commands (one per line)
+    
+    Examples:
+      iam-generator generate-conditional-policy commands.txt --mfa-required
+      iam-generator generate-conditional-policy commands.txt --conditions-file conditions.json
+      iam-generator generate-conditional-policy commands.txt --ip-restriction 203.0.113.0/24
+    """
+    try:
+        from .enhanced_services import EnhancedIAMService
+        
+        # Read commands file
+        with open(commands_file, 'r') as f:
+            commands = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        
+        # Build conditions
+        conditions = {}
+        
+        if conditions_file:
+            with open(conditions_file, 'r') as f:
+                conditions.update(json.load(f))
+        
+        if mfa_required:
+            conditions['mfa_required'] = True
+        
+        if ip_restriction:
+            conditions['ip_restriction'] = list(ip_restriction)
+        
+        if ctx.obj["verbose"]:
+            console.print(f"[blue]Generating conditional policy for {len(commands)} commands[/blue]")
+            console.print(f"[blue]Conditions:[/blue] {list(conditions.keys())}")
+        
+        # Generate policy
+        service = EnhancedIAMService()
+        result = service.generate_conditional_policy(commands, conditions, account_id, region)
+        
+        if output == "json":
+            policy_json = json.dumps(result['policy_document'], indent=2)
+            console.print(Syntax(policy_json, "json", theme="monokai", line_numbers=True))
+        elif output == "terraform":
+            terraform_config = _convert_to_terraform_policy(result['policy_document'])
+            console.print(Syntax(terraform_config, "hcl", theme="monokai"))
+        elif output == "cloudformation":
+            cf_config = _convert_to_cloudformation_policy(result['policy_document'])
+            console.print(Syntax(cf_config, "yaml", theme="monokai"))
+        
+        # Display security enhancements
+        if result['security_enhancements']:
+            console.print("\n[bold green]Security Enhancements Applied:[/bold green]")
+            for enhancement in result['security_enhancements']:
+                console.print(f"  • {enhancement}")
+        
+        if save:
+            if output == "json":
+                save_data = result
+            elif output == "terraform":
+                save_data = _convert_to_terraform_policy(result['policy_document'])
+            elif output == "cloudformation":
+                save_data = _convert_to_cloudformation_policy(result['policy_document'])
+            
+            _save_output(save_data, save, output)
+            console.print(f"[green]Conditional policy saved to:[/green] {save}")
+            
+    except Exception as e:
+        console.print(f"[red]Error generating conditional policy:[/red] {str(e)}")
+        if ctx.obj["verbose"]:
+            import traceback
+            console.print(traceback.format_exc())
+        sys.exit(1)
+
+
 def _display_stats_table(stats: Dict[str, Any]) -> None:
     """Display statistics in table format."""
     
@@ -633,7 +848,7 @@ def _display_table_output(result: Dict[str, Any]) -> None:
         additional_table.add_column("Reason", style="green")
         
         for perm in result['additional_permissions']:
-            additional_table.add_row(perm['action'], perm.get('reason', ''))
+            table.add_row(perm['action'], perm.get('reason', ''))
         
         console.print(additional_table)
     
@@ -682,6 +897,224 @@ def _save_output(result: Dict[str, Any], filepath: str, format: str) -> None:
             if result.get('policy_document'):
                 f.write("\nGenerated Policy:\n")
                 f.write(json.dumps(result['policy_document'], indent=2))
+
+
+def _display_validation_table(result, policy_file: str) -> None:
+    """Display policy validation results in a table format."""
+    from .policy_validator import ValidationSeverity
+    
+    # Create summary panel
+    status_color = "green" if result.is_valid else "red"
+    status_text = "VALID" if result.is_valid else "INVALID"
+    
+    summary = Panel(
+        f"[bold]Policy File:[/bold] {policy_file}\n"
+        f"[bold]Status:[/bold] [{status_color}]{status_text}[/{status_color}]\n"
+        f"[bold]Score:[/bold] {result.score}/100\n"
+        f"[bold]Size:[/bold] {result.policy_size} characters\n"
+        f"[bold]Type:[/bold] {result.policy_type.value}",
+        title="Policy Validation Summary",
+        border_style=status_color
+    )
+    console.print(summary)
+    
+    # Display issues if any
+    if result.issues:
+        console.print("\n[bold red]Issues Found:[/bold red]")
+        
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Severity", style="bold")
+        table.add_column("Category")
+        table.add_column("Message", max_width=60)
+        table.add_column("Location")
+        table.add_column("Suggestion", max_width=40)
+        
+        # Sort issues by severity
+        severity_order = {
+            ValidationSeverity.CRITICAL: 0,
+            ValidationSeverity.ERROR: 1,
+            ValidationSeverity.WARNING: 2,
+            ValidationSeverity.INFO: 3
+        }
+        sorted_issues = sorted(result.issues, key=lambda x: severity_order.get(x.severity, 4))
+        
+        for issue in sorted_issues:
+            severity_colors = {
+                ValidationSeverity.CRITICAL: "red bold",
+                ValidationSeverity.ERROR: "red",
+                ValidationSeverity.WARNING: "yellow",
+                ValidationSeverity.INFO: "blue"
+            }
+            severity_color = severity_colors.get(issue.severity, "white")
+            
+            table.add_row(
+                f"[{severity_color}]{issue.severity.value.upper()}[/{severity_color}]",
+                issue.category,
+                issue.message,
+                issue.location or "N/A",
+                issue.suggestion or "N/A"
+            )
+        
+        console.print(table)
+    
+    # Display recommendations
+    if result.recommendations:
+        console.print("\n[bold green]Recommendations:[/bold green]")
+        for i, rec in enumerate(result.recommendations, 1):
+            console.print(f"  {i}. {rec}")
+
+
+def _display_validation_json(result) -> None:
+    """Display policy validation results in JSON format."""
+    from dataclasses import asdict
+    
+    validation_data = {
+        'is_valid': result.is_valid,
+        'policy_size': result.policy_size,
+        'policy_type': result.policy_type.value,
+        'score': result.score,
+        'issues': [asdict(issue) for issue in result.issues],
+        'recommendations': result.recommendations
+    }
+    
+    # Convert enum values to strings
+    for issue in validation_data['issues']:
+        if hasattr(issue['severity'], 'value'):
+            issue['severity'] = issue['severity'].value
+    
+    json_output = json.dumps(validation_data, indent=2)
+    console.print(Syntax(json_output, "json", theme="monokai", line_numbers=True))
+
+
+def _display_dependencies_table(result: Dict[str, Any], commands_file: str) -> None:
+    """Display cross-service dependencies in a table format."""
+    console.print(Panel(
+        f"[bold]Commands File:[/bold] {commands_file}\n"
+        f"[bold]Services Found:[/bold] {len(result['dependencies'])}\n"
+        f"[bold]Additional Permissions:[/bold] {len(result['additional_permissions'])}",
+        title="Cross-Service Dependency Analysis",
+        border_style="blue"
+    ))
+    
+    # Display dependencies
+    if result['dependencies']:
+        console.print("\n[bold blue]Service Dependencies:[/bold blue]")
+        
+        tree = Tree("Services")
+        for service, deps in result['dependencies'].items():
+            service_node = tree.add(f"[bold green]{service.upper()}[/bold green]")
+            for dep in deps:
+                service_node.add(f"→ {dep}")
+        
+        console.print(tree)
+    
+    # Display additional permissions
+    if result['additional_permissions']:
+        console.print("\n[bold blue]Additional Permissions Required:[/bold blue]")
+        
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Action")
+        table.add_column("Resource")
+        table.add_column("Dependency")
+        
+        for perm in result['additional_permissions']:
+            table.add_row(
+                perm['Action'],
+                perm['Resource'],
+                perm.get('Dependency', 'N/A')
+            )
+        
+        console.print(table)
+
+
+def _convert_to_terraform_policy(policy: Dict[str, Any]) -> str:
+    """Convert IAM policy to Terraform format."""
+    policy_json = json.dumps(policy, indent=2)
+    
+    terraform_config = f'''resource "aws_iam_policy" "generated_policy" {{
+  name        = "GeneratedPolicy"
+  description = "Auto-generated IAM policy with conditions"
+  
+  policy = jsonencode({policy_json})
+}}
+
+# IAM role to attach the policy
+resource "aws_iam_role" "generated_role" {{
+  name = "GeneratedRole"
+  
+  assume_role_policy = jsonencode({{
+    Version = "2012-10-17"
+    Statement = [
+      {{
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {{
+          Service = "ec2.amazonaws.com"
+        }}
+      }}
+    ]
+  }})
+}}
+
+# Attach policy to role
+resource "aws_iam_role_policy_attachment" "generated_attachment" {{
+  role       = aws_iam_role.generated_role.name
+  policy_arn = aws_iam_policy.generated_policy.arn
+}}'''
+    
+    return terraform_config
+
+
+def _convert_to_cloudformation_policy(policy: Dict[str, Any]) -> str:
+    """Convert IAM policy to CloudFormation format."""
+    import yaml
+    
+    cf_template = {
+        'AWSTemplateFormatVersion': '2010-09-09',
+        'Description': 'Auto-generated IAM policy with conditions',
+        'Resources': {
+            'GeneratedPolicy': {
+                'Type': 'AWS::IAM::ManagedPolicy',
+                'Properties': {
+                    'PolicyDocument': policy,
+                    'Description': 'Auto-generated IAM policy with security conditions',
+                    'Path': '/'
+                }
+            },
+            'GeneratedRole': {
+                'Type': 'AWS::IAM::Role',
+                'Properties': {
+                    'AssumeRolePolicyDocument': {
+                        'Version': '2012-10-17',
+                        'Statement': [
+                            {
+                                'Effect': 'Allow',
+                                'Principal': {
+                                    'Service': 'ec2.amazonaws.com'
+                                },
+                                'Action': 'sts:AssumeRole'
+                            }
+                        ]
+                    },
+                    'ManagedPolicyArns': [
+                        {'Ref': 'GeneratedPolicy'}
+                    ]
+                }
+            }
+        },
+        'Outputs': {
+            'PolicyArn': {
+                'Description': 'ARN of the generated IAM policy',
+                'Value': {'Ref': 'GeneratedPolicy'}
+            },
+            'RoleArn': {
+                'Description': 'ARN of the generated IAM role',
+                'Value': {'Fn::GetAtt': ['GeneratedRole', 'Arn']}
+            }
+        }
+    }
+    
+    return yaml.dump(cf_template, default_flow_style=False, indent=2)
 
 
 if __name__ == "__main__":

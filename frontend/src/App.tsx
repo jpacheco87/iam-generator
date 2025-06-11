@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { CommandAnalyzer } from '@/components/CommandAnalyzer'
 import { RoleGenerator } from '@/components/RoleGenerator'
 import { BatchAnalyzer } from '@/components/BatchAnalyzer'
-import { EnhancedBatchAnalyzer } from '@/components/EnhancedBatchAnalyzer'
+import PolicyValidator from '@/components/PolicyValidator'
+import CrossServiceDependencies from '@/components/CrossServiceDependencies'
+import ConditionalPolicyGenerator from '@/components/ConditionalPolicyGenerator'
 import { iamGeneratorApi } from '@/lib/api'
 import { 
   Play, 
@@ -16,7 +18,10 @@ import {
   Github, 
   AlertCircle,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  Shield,
+  Link,
+  Lock
 } from 'lucide-react'
 
 function App() {
@@ -264,34 +269,41 @@ function App() {
           <Card className="bg-white border-aws-gray-200 rounded shadow-sm">
             <Tabs defaultValue="analyze" className="w-full">
               <div className="border-b border-aws-gray-200 bg-aws-gray-50 rounded-t-md">
-                <TabsList className="w-full grid grid-cols-4 bg-transparent h-12 px-1 pt-1">
+                <TabsList className="w-full grid grid-cols-5 bg-transparent h-12 px-1 pt-1">
                   <TabsTrigger 
                     value="analyze" 
                     className="flex items-center justify-center gap-1.5 h-full text-sm text-aws-gray-700 data-[state=active]:bg-white data-[state=active]:text-aws-blue data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-aws-blue transition-all duration-150 rounded border-b-2 border-transparent hover:bg-aws-gray-100 data-[state=active]:hover:bg-white"
                   >
                     <Play className="h-3.5 w-3.5" />
-                    <span className="font-medium">Analyze Command</span>
+                    <span className="font-medium">Analyze</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="generate" 
                     className="flex items-center justify-center gap-1.5 h-full text-sm text-aws-gray-700 data-[state=active]:bg-white data-[state=active]:text-aws-orange data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-aws-orange transition-all duration-150 rounded border-b-2 border-transparent hover:bg-aws-gray-100 data-[state=active]:hover:bg-white"
                   >
                     <Settings className="h-3.5 w-3.5" />
-                    <span className="font-medium">Generate Role</span>
+                    <span className="font-medium">Roles</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="batch" 
                     className="flex items-center justify-center gap-1.5 h-full text-sm text-aws-gray-700 data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-green-600 transition-all duration-150 rounded border-b-2 border-transparent hover:bg-aws-gray-100 data-[state=active]:hover:bg-white"
                   >
                     <FileText className="h-3.5 w-3.5" />
-                    <span className="font-medium">Batch Analysis</span>
+                    <span className="font-medium">Batch</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="validate" 
+                    className="flex items-center justify-center gap-1.5 h-full text-sm text-aws-gray-700 data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-purple-600 transition-all duration-150 rounded border-b-2 border-transparent hover:bg-aws-gray-100 data-[state=active]:hover:bg-white"
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    <span className="font-medium">Validate</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="enhanced" 
-                    className="flex items-center justify-center gap-1.5 h-full text-sm text-aws-gray-700 data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-purple-600 transition-all duration-150 rounded border-b-2 border-transparent hover:bg-aws-gray-100 data-[state=active]:hover:bg-white"
+                    className="flex items-center justify-center gap-1.5 h-full text-sm text-aws-gray-700 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-all duration-150 rounded border-b-2 border-transparent hover:bg-aws-gray-100 data-[state=active]:hover:bg-white"
                   >
-                    <Settings className="h-3.5 w-3.5" />
-                    <span className="font-medium">Enhanced Analysis</span>
+                    <Lock className="h-3.5 w-3.5" />
+                    <span className="font-medium">Advanced</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -309,8 +321,29 @@ function App() {
                   <BatchAnalyzer onBatchAnalyze={handleBatchAnalyze} />
                 </TabsContent>
 
+                <TabsContent value="validate" className="mt-0 p-6 bg-white border border-aws-gray-200 rounded shadow-sm">
+                  <PolicyValidator />
+                </TabsContent>
+
                 <TabsContent value="enhanced" className="mt-0 p-6 bg-white border border-aws-gray-200 rounded shadow-sm">
-                  <EnhancedBatchAnalyzer onBatchAnalyze={handleBatchAnalyze} />
+                  <Tabs defaultValue="dependencies" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="dependencies" className="flex items-center gap-2">
+                        <Link className="h-4 w-4" />
+                        Cross-Service Dependencies
+                      </TabsTrigger>
+                      <TabsTrigger value="conditional" className="flex items-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        Conditional Policies
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="dependencies" className="mt-6">
+                      <CrossServiceDependencies />
+                    </TabsContent>
+                    <TabsContent value="conditional" className="mt-6">
+                      <ConditionalPolicyGenerator />
+                    </TabsContent>
+                  </Tabs>
                 </TabsContent>
               </div>
             </Tabs>
