@@ -1,10 +1,10 @@
 # IAM Generator Backend
 
-FastAPI-based backend service for the AWS IAM Generator application.
+Enterprise-grade FastAPI backend service for the AWS IAM Generator application with enhanced IAM analysis capabilities.
 
 ## Overview
 
-This backend provides REST API endpoints for analyzing AWS CLI commands and generating appropriate IAM permissions and policies. It's built with FastAPI and follows modern Python application architecture patterns.
+This backend provides comprehensive REST API endpoints for analyzing AWS CLI commands and generating appropriate IAM permissions and policies. Built with FastAPI, it features advanced IAM analysis, policy validation, cross-service dependency detection, and compliance checking.
 
 ## Structure
 
@@ -12,9 +12,9 @@ This backend provides REST API endpoints for analyzing AWS CLI commands and gene
 backend/
 ├── app/
 │   ├── __init__.py          # Package initialization
-│   ├── main.py              # FastAPI application setup
-│   ├── models.py            # Pydantic models for API schemas
-│   ├── services.py          # Business logic services
+│   ├── main.py              # FastAPI application setup with all routers
+│   ├── models.py            # Comprehensive Pydantic models for API schemas
+│   ├── services.py          # Business logic services with enhanced features
 │   ├── core/
 │   │   ├── __init__.py
 │   │   └── config.py        # Application configuration
@@ -22,8 +22,16 @@ backend/
 │       ├── __init__.py
 │       ├── health.py        # Health check endpoints
 │       ├── analysis.py      # Command analysis endpoints
-│       ├── roles.py         # IAM role generation endpoints
-│       └── advanced.py      # Advanced analysis features
+│       ├── roles.py         # IAM role generation endpoints (including all-formats)
+│       ├── advanced.py      # Advanced analysis features
+│       └── enhanced.py      # 🆕 Enhanced IAM features (7 endpoints)
+├── iam_generator/
+│   ├── analyzer.py          # Core command analysis engine
+│   ├── parser.py            # AWS CLI command parsing
+│   ├── permissions_db.py    # Permission database (52 AWS services)
+│   ├── role_generator.py    # IAM role generation with multiple formats
+│   ├── policy_validator.py  # 🆕 Policy validation engine
+│   └── enhanced_services.py # 🆕 Enhanced IAM services
 ├── requirements.txt         # Python dependencies
 ├── setup.py                # Package setup configuration
 └── README.md               # This file
@@ -34,18 +42,28 @@ backend/
 ### Health
 - `GET /health` - Health check for container orchestration
 
-### Analysis
-- `POST /analyze` - Analyze single AWS CLI command
-- `POST /batch-analyze` - Analyze multiple commands
-- `GET /services` - Get supported AWS services
+### Core Analysis
+- `POST /analyze` - Analyze single AWS CLI command with detailed permission breakdown
+- `POST /batch-analyze` - Analyze multiple commands with batch processing
+- `GET /services` - Get supported AWS services (52 services, 300+ commands)
 
-### Roles
-- `POST /generate-role` - Generate IAM role configuration
+### Role Generation
+- `POST /generate-role` - Generate IAM role configuration (single format)
+- `POST /generate-role-all-formats` - 🆕 **Generate all formats simultaneously** (JSON, Terraform, CloudFormation, AWS CLI)
 
-### Advanced Features (✅ Fully Implemented)
+### Advanced Analysis Features ✅ 
 - `POST /analyze-resource-specific` - Generate policies with specific ARNs instead of wildcards
 - `POST /analyze-least-privilege` - Generate minimal permission policies with security conditions
 - `POST /service-summary` - Generate comprehensive service usage analysis and statistics
+
+### 🆕 Enhanced IAM Features (v2.3)
+- `POST /enhanced/validate-policy` - **Policy validation** with security scoring (0-100) and recommendations
+- `POST /enhanced/cross-service-dependencies` - **Dependency analysis** with automatic service relationship detection
+- `POST /enhanced/conditional-policy` - **Conditional policy generation** with MFA, IP, time, VPC restrictions
+- `POST /enhanced/optimize-policy` - **Policy optimization** with size reduction and security improvements
+- `GET /enhanced/security-recommendations/{service}` - **Security recommendations** for specific AWS services
+- `GET /enhanced/policy-templates` - **Policy templates** for common enterprise use cases
+- `POST /enhanced/compliance-check/{framework}` - **Compliance checking** for SOC2, PCI, HIPAA, GDPR
 
 ## Enhanced Analysis Capabilities
 

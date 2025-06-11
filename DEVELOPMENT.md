@@ -1,36 +1,48 @@
-# Development Guide - Restructured Backend
+# Development Guide - Enterprise IAM Generator
 
-## New Project Structure
+## Project Structure (v2.3.0)
 
-The project has been restructured with a clean separation between backend and frontend:
+The AWS IAM Generator is an enterprise-grade application with clean separation between backend and frontend, featuring enhanced IAM analysis capabilities:
 
 ```
 iam_generator/
-├── backend/                    # 🐍 All Python code
-│   ├── iam_generator/          # Core business logic
+├── backend/                    # 🐍 Python FastAPI Backend
+│   ├── iam_generator/          # Core business logic (52 AWS services)
 │   │   ├── analyzer.py         # Permission analysis engine
 │   │   ├── parser.py           # AWS CLI command parser
-│   │   ├── permissions_db.py   # Database (52 AWS services)
-│   │   ├── role_generator.py   # IAM role generator
+│   │   ├── permissions_db.py   # Database (300+ command mappings)
+│   │   ├── role_generator.py   # Multi-format IAM role generator
+│   │   ├── policy_validator.py # 🆕 Policy validation engine
+│   │   ├── enhanced_services.py# 🆕 Enhanced IAM services
 │   │   ├── cli.py              # CLI interface
 │   │   └── main.py             # CLI entry point
 │   ├── app/                    # FastAPI web application
-│   │   ├── main.py             # FastAPI app setup
-│   │   ├── models.py           # Pydantic schemas
+│   │   ├── main.py             # FastAPI app with all routers
+│   │   ├── models.py           # Comprehensive Pydantic schemas
 │   │   ├── services.py         # Business logic services
-│   │   ├── routers/            # API endpoint modules
+│   │   ├── routers/            # API endpoint modules (15 endpoints)
 │   │   │   ├── health.py       # Health checks
 │   │   │   ├── analysis.py     # Command analysis
-│   │   │   ├── roles.py        # Role generation
-│   │   │   └── advanced.py     # Advanced features
+│   │   │   ├── roles.py        # Role generation (including all-formats)
+│   │   │   ├── advanced.py     # Advanced analysis features
+│   │   │   └── enhanced.py     # 🆕 Enhanced IAM features (7 endpoints)
 │   │   └── core/               # Configuration
 │   │       └── config.py       # App settings
 │   ├── requirements.txt        # Python dependencies
-│   └── README.md               # Backend docs
-├── frontend/                   # ⚛️  React application
-│   ├── src/                    # TypeScript source
+│   └── README.md               # Backend documentation
+├── frontend/                   # ⚛️ React TypeScript Frontend
+│   ├── src/                    # TypeScript source with enhanced components
+│   │   ├── components/         # 12+ React components
+│   │   │   ├── PolicyValidator.tsx          # 🆕 Policy validation
+│   │   │   ├── CrossServiceDependencies.tsx # 🆕 Dependency analysis
+│   │   │   ├── ConditionalPolicyGenerator.tsx # 🆕 Conditional policies
+│   │   │   ├── RoleGenerator.tsx            # 🆕 One-click generation
+│   │   │   └── EnhancedBatchAnalyzer.tsx    # Advanced batch analysis
+│   │   └── lib/api.ts          # Complete API integration
 │   └── package.json            # Node.js dependencies
-└── tests/                      # 🧪 Test suite
+├── tests/                      # 🧪 Comprehensive test suite
+├── docs/                       # 📚 Documentation
+└── docker-compose*.yml         # 🐳 Container orchestration
 ```
 
 ## Development Commands
@@ -40,15 +52,21 @@ iam_generator/
 # Run the CLI tool from project root (recommended)
 PYTHONPATH=backend python -m iam_generator.main --help
 
-# Analyze a command
-PYTHONPATH=backend python -m iam_generator.main analyze s3 ls
+# Analyze a command with resource-specific ARNs
+PYTHONPATH=backend python -m iam_generator.main analyze s3 ls s3://my-bucket
 
-# Generate a role
+# Generate a role with all formats
 PYTHONPATH=backend python -m iam_generator.main generate-role s3 ls --role-name S3ReadRole
+
+# Batch analysis
+PYTHONPATH=backend python -m iam_generator.main batch-analyze commands.txt
 
 # Alternative: Install as package first
 cd backend && pip install -e .
 iam-generator --help
+iam-generator analyze s3 ls s3://my-bucket
+iam-generator generate-role s3 ls --role-name S3ReadRole
+```
 iam-generator analyze s3 ls
 iam-generator generate-role s3 ls --role-name S3ReadRole
 ```

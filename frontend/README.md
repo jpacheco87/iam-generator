@@ -1,28 +1,43 @@
 # AWS IAM Generator - Frontend
 
-A modern React frontend for the AWS CLI IAM Permissions Analyzer tool, built with shadcn/ui components and Tailwind CSS.
+A modern React frontend for the AWS CLI IAM Permissions Analyzer tool, featuring enterprise-grade IAM analysis capabilities, built with shadcn/ui components and Tailwind CSS.
 
 ## Features
 
-- **Command Analysis**: Analyze single AWS CLI commands to extract required IAM permissions
-- **Role Generation**: Generate complete IAM roles with trust policies and permission policies
-- **Standard Batch Processing**: Analyze multiple commands at once with comprehensive summaries
-- **Enhanced Batch Analysis** ✨ **FULLY IMPLEMENTED**: Advanced analysis modes including:
-  - **Resource-Specific Analysis**: Generate policies with precise ARNs instead of wildcards
-  - **Least Privilege Optimization**: Create minimal permission policies with security conditions
-  - **Service Usage Summary**: Detailed breakdown of AWS services, actions, and permissions
-- **Multiple Output Formats**: Support for JSON, Terraform, CloudFormation, and AWS CLI outputs
-- **Real-time Analysis**: Interactive interface with real-time feedback and hot reload development
-- **Modern UI**: Built with shadcn/ui components for a clean, professional interface
+### Core Analysis
+- **Command Analysis**: Analyze single AWS CLI commands to extract required IAM permissions with resource-specific ARN detection
+- **Enhanced Role Generation**: ✨ **One-click generation** of all output formats simultaneously (JSON, Terraform, CloudFormation, AWS CLI)
+- **Advanced Batch Processing**: Analyze multiple commands with comprehensive summaries and dependency mapping
+
+### ✨ Enhanced IAM Features (v2.3)
+- **Policy Validation**: Interactive policy validation with security scoring (0-100), issue detection, and actionable recommendations
+- **Cross-Service Dependencies**: Visual dependency analysis with automatic service relationship detection
+- **Conditional Policy Generation**: Advanced policy creation with MFA, IP, time, VPC, and tag-based restrictions
+- **Security Recommendations**: Service-specific best practices and vulnerability detection
+- **Compliance Checking**: SOC2, PCI, HIPAA, and GDPR compliance analysis with detailed scoring
+- **Policy Templates**: Enterprise-ready templates for common use cases
+
+### Advanced Analysis Modes
+- **Resource-Specific Analysis**: Generate policies with precise ARNs instead of wildcards
+- **Least Privilege Optimization**: Create minimal permission policies with automatic security conditions
+- **Service Usage Summary**: Detailed breakdown of AWS services, actions, permissions, and dependencies
+
+### User Experience
+- **One-Click Role Generation**: All formats generated simultaneously without format selection
+- **5-Tab Interface**: Easy switching between Trust Policy, Permissions, Terraform, CloudFormation, and AWS CLI
+- **Real-time Analysis**: Interactive interface with instant feedback and validation
+- **Modern UI**: Professional interface built with shadcn/ui components
+- **Hot Reload Development**: Instant updates during development with Vite HMR
 
 ## Tech Stack
 
-- **React 18** with TypeScript
-- **Vite** for fast development and building
-- **shadcn/ui** for UI components
-- **Tailwind CSS** for styling
-- **Lucide React** for icons
-- **Axios** for API communication
+- **React 18** with TypeScript for type safety
+- **Vite** for fast development and optimized builds
+- **shadcn/ui** for enterprise-grade UI components
+- **Tailwind CSS** for responsive styling
+- **Lucide React** for consistent iconography
+- **Axios** for robust API communication
+- **Custom Hooks** for state management and API integration
 
 ## Getting Started
 

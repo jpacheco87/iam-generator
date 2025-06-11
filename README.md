@@ -2,23 +2,38 @@
 
 **Copyright (c) 2025 Jeff Pacheco JchecoPhotography. All rights reserved.**
 
-A comprehensive tool that analyzes AWS CLI commands and generates the minimal IAM permissions required to execute them securely. This project helps developers, DevOps engineers, and security teams create least-privilege IAM roles and policies by automatically mapping AWS CLI workflows to precise permission requirements.
+An enterprise-grade tool that analyzes AWS CLI commands and generates minimal IAM permissions required to execute them securely. This project helps developers, DevOps engineers, and security teams create least-privilege IAM roles and policies by automatically mapping AWS CLI workflows to precise permission requirements.
 
 ## 🌟 Key Features
 
+### Core Capabilities
 - **Intelligent Command Analysis**: Advanced parsing of AWS CLI commands to extract services, actions, and resource ARNs
-- **Comprehensive Permission Mapping**: Database of 52 AWS services with 300+ command mappings
-- **Multiple Interfaces**: CLI tool, modern React web interface, and REST API
-- **Enhanced Analysis Modes**: 
-  - Standard batch analysis with comprehensive summaries
-  - Resource-specific policy generation with precise ARN targeting
-  - Least privilege optimization with security conditions
-  - Service usage analysis with detailed breakdowns
-- **Smart Role Generation**: Create complete IAM roles with appropriate trust policies
-- **Multiple Output Formats**: Terraform, CloudFormation, AWS CLI, JSON, and YAML support
-- **Advanced Web Interface**: Modern React frontend with enhanced batch analyzer and hot-reload development
-- **Production Ready**: Fully containerized with Docker and Docker Compose support
+- **Comprehensive Permission Mapping**: Database of 52 AWS services with 300+ command mappings covering all major AWS services
+- **Multiple Interfaces**: CLI tool, modern React web interface, and comprehensive REST API
+- **Smart Role Generation**: Create complete IAM roles with appropriate trust policies in multiple formats
+
+### ✨ Enhanced IAM Features (v2.0)
+- **Policy Validation Engine**: Comprehensive validation with AWS size limits, security scoring (0-100), and actionable recommendations
+- **Cross-Service Dependency Analysis**: Automatic detection of service dependencies (Lambda → CloudWatch Logs, ECS → ECR, Step Functions → Lambda, etc.)
+- **Conditional Policy Generation**: Advanced security with MFA, IP, time, VPC, and resource-tag restrictions
+- **Policy Optimization**: Intelligent size reduction, statement consolidation, and security improvements
+- **Compliance Checking**: SOC2, PCI, HIPAA, and GDPR compliance analysis with detailed scoring
+- **Security Recommendations**: Service-specific best practices and vulnerability detection with remediation steps
+- **Policy Templates**: Pre-built enterprise templates for common use cases (Lambda execution, S3 operations, EC2 management, RDS access)
+
+### Advanced Analysis Modes
+- **Resource-Specific Policy Generation**: Precise ARN targeting instead of wildcards for enhanced security
+- **Least Privilege Optimization**: Minimal required permissions with automatic security condition injection
+- **Service Usage Analysis**: Detailed breakdowns of AWS services, permissions, and usage patterns
+- **Batch Analysis**: Process multiple commands with comprehensive summaries and dependency mapping
+
+### Output & Integration
+- **Multiple Output Formats**: JSON, Terraform HCL, CloudFormation YAML/JSON, AWS CLI commands
+- **One-Click Generation**: All formats generated simultaneously in a single API call (no format selection needed)
+- **Advanced Web Interface**: Modern React frontend with shadcn/ui components and enhanced batch analyzer
+- **Production Ready**: Fully containerized with Docker Compose, Nginx proxy, and health checks
 - **Security Best Practices**: Automatic security condition injection and least privilege enforcement
+- **Hot Reload Development**: Full development stack with automatic code reloading for rapid iteration
 
 ## 🚀 Architecture Overview
 
@@ -37,9 +52,29 @@ iam-generator generate-role --role-name S3ReadRole s3 ls s3://my-bucket
 ```
 
 ### 2. Web Interface (Recommended)
-Modern React frontend with shadcn/ui components for interactive analysis:
+Modern React frontend with shadcn/ui components for interactive analysis and enhanced IAM features:
 
 ![IAM Policy Generator Web Interface](docs/ui.png)
+
+**Available Tabs & Features:**
+- **Analyze**: Single command analysis with detailed permission breakdown and resource-specific ARN detection
+- **Generate**: **✨ One-click role generation** - All formats (JSON, Terraform, CloudFormation, AWS CLI) generated simultaneously in a single API call
+- **Batch**: Advanced batch analysis with multiple analysis modes:
+  - Standard analysis with permission mapping
+  - Resource-specific analysis with ARN targeting
+  - Least privilege optimization with security conditions
+  - Service summary with usage patterns and dependency analysis
+- **Validate**: **✨ Policy validation engine** with:
+  - Security scoring (0-100) with detailed breakdown
+  - AWS policy size limit validation (6144 characters)
+  - Security issue detection and remediation recommendations
+  - Best practices compliance checking
+- **Advanced**: **✨ Enhanced IAM features** including:
+  - Cross-service dependency analysis with interactive visualization
+  - Conditional policy generation with MFA, IP, time, VPC, and tag-based restrictions
+  - Security recommendations with service-specific best practices
+  - Compliance checking for SOC2, PCI, HIPAA, and GDPR frameworks
+  - Policy templates for enterprise use cases
 
 ```bash
 # Complete application stack with Docker
@@ -47,16 +82,55 @@ docker-compose up -d
 
 # Access interfaces:
 # Web UI: http://localhost:3000
-# API: http://localhost:8000
+# API: http://localhost:8000  
 # API Docs: http://localhost:8000/docs
 ```
 
 ### 3. REST API
-FastAPI backend for programmatic integration:
+FastAPI backend for programmatic integration with comprehensive endpoints:
+
+**Core Endpoints:**
 ```bash
+# Basic command analysis
 curl -X POST "http://localhost:8000/analyze" \
   -H "Content-Type: application/json" \
   -d '{"command": "aws s3 ls s3://my-bucket"}'
+
+# Generate role (single format - legacy endpoint)
+curl -X POST "http://localhost:8000/generate-role" \
+  -H "Content-Type: application/json" \
+  -d '{"command": "s3 ls", "role_name": "S3Role", "output_format": "terraform"}'
+
+# ✨ Generate role (all formats simultaneously - recommended)
+curl -X POST "http://localhost:8000/generate-role-all-formats" \
+  -H "Content-Type: application/json" \
+  -d '{"command": "s3 ls", "role_name": "S3Role", "trust_policy": "ec2"}'
+```
+
+**🆕 Enhanced IAM API Endpoints:**
+```bash
+# Policy validation with security scoring
+curl -X POST "http://localhost:8000/enhanced/validate-policy" \
+  -H "Content-Type: application/json" \
+  -d '{"policy": {...}, "policy_type": "managed"}'
+
+# Cross-service dependency analysis  
+curl -X POST "http://localhost:8000/enhanced/cross-service-dependencies" \
+  -H "Content-Type: application/json" \
+  -d '{"commands": ["lambda invoke --function-name test"], "include_implicit": true}'
+
+# Conditional policy generation
+curl -X POST "http://localhost:8000/enhanced/conditional-policy" \
+  -H "Content-Type: application/json" \
+  -d '{"commands": ["s3 ls"], "conditions": {"require_mfa": true, "ip_restrictions": ["10.0.0.0/8"]}}'
+
+# Security recommendations
+curl -X GET "http://localhost:8000/enhanced/security-recommendations/s3"
+
+# Compliance checking
+curl -X POST "http://localhost:8000/enhanced/compliance-check/soc2" \
+  -H "Content-Type: application/json" \
+  -d '{"policy": {...}}'
 ```
 
 ## 📦 Installation & Deployment
@@ -140,7 +214,31 @@ iam-generator analyze --output json ec2 run-instances --image-id ami-12345
 iam-generator analyze lambda create-function --function-name test
 ```
 
-### Generate IAM Roles
+### 🆕 One-Click Role Generation (All Formats)
+The latest update enables generating all output formats simultaneously:
+
+```bash
+# Generate role with all formats (JSON, Terraform, CloudFormation, AWS CLI)
+# Via Web Interface: Simply click "Generate IAM Role" - no format selection needed!
+
+# Via API: All formats returned in single response
+curl -X POST "http://localhost:8000/generate-role-all-formats" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "command": "s3 ls s3://my-bucket",
+    "role_name": "S3ReadRole", 
+    "trust_policy": "ec2",
+    "description": "Role for S3 read access"
+  }'
+
+# Response includes:
+# - role_name, trust_policy, permissions_policy (JSON)
+# - terraform_config (Complete HCL)
+# - cloudformation_config (YAML/JSON template)  
+# - aws_cli_commands (Ready-to-run commands)
+```
+
+### Generate IAM Roles (Individual Formats)
 ```bash
 # Basic S3 role
 PYTHONPATH=backend python -m iam_generator.main generate-role --role-name S3ReadRole s3 ls s3://my-bucket
@@ -188,8 +286,118 @@ iam-generator batch-analyze commands.txt --output-dir ./results
 
 ## 🔧 Advanced Features
 
-### Enhanced Analysis Modes (✅ Fully Implemented)
-The tool now supports multiple analysis modes through both CLI and web interface:
+### 🆕 Enhanced IAM Features (Latest Release)
+
+#### 1. Policy Validation Engine
+Comprehensive validation with AWS limits, security scoring, and recommendations:
+
+```bash
+# Web Interface: Use the "Validate" tab for interactive policy validation
+
+# API usage
+curl -X POST "http://localhost:8000/enhanced/validate-policy" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy": {
+      "Version": "2012-10-17",
+      "Statement": [{"Effect": "Allow", "Action": "*", "Resource": "*"}]
+    },
+    "policy_type": "managed"
+  }'
+
+# Returns:
+# - is_valid: boolean
+# - policy_size: number (AWS 6144 char limit check)
+# - score: 0-100 security score
+# - issues: detailed security and syntax issues
+# - recommendations: improvement suggestions
+```
+
+#### 2. Cross-Service Dependency Analysis
+Automatic detection of service dependencies with enhanced policies:
+
+```bash
+# Web Interface: Use "Advanced" > "Dependencies" tab
+
+# API usage
+curl -X POST "http://localhost:8000/enhanced/cross-service-dependencies" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": ["lambda invoke --function-name my-function"],
+    "include_implicit": true
+  }'
+
+# Detects dependencies like:
+# - Lambda → CloudWatch Logs (for logging)
+# - Lambda → VPC (for network access)
+# - ECS → ECR (for container images)
+# - Lambda → X-Ray (for tracing)
+```
+
+#### 3. Conditional Policy Generation
+Generate policies with MFA, IP, time, and VPC restrictions:
+
+```bash
+# Web Interface: Use "Advanced" > "Conditional Policies" tab
+
+# API usage
+curl -X POST "http://localhost:8000/enhanced/conditional-policy" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": ["s3 list-buckets"],
+    "conditions": {
+      "require_mfa": true,
+      "ip_restrictions": ["203.0.113.0/24"],
+      "time_restrictions": {
+        "start_time": "09:00",
+        "end_time": "17:00",
+        "timezone": "UTC"
+      }
+    }
+  }'
+
+# Generates policies with IAM conditions:
+# - aws:MultiFactorAuthPresent
+# - aws:SourceIp
+# - aws:CurrentTime
+# - aws:SourceVpc
+```
+
+#### 4. Security Recommendations & Compliance
+Service-specific best practices and compliance checking:
+
+```bash
+# Get security recommendations for a service
+curl -X GET "http://localhost:8000/enhanced/security-recommendations/s3"
+
+# Check compliance against frameworks
+curl -X POST "http://localhost:8000/enhanced/compliance-check/soc2" \
+  -H "Content-Type: application/json" \
+  -d '{"policy": {...}}'
+
+# Supported frameworks: SOC2, PCI, HIPAA, GDPR
+```
+
+#### 5. Policy Optimization & Templates
+Optimize existing policies and use pre-built templates:
+
+```bash
+# Optimize a policy for size and security
+curl -X POST "http://localhost:8000/enhanced/optimize-policy" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "policy": {...},
+    "optimization_level": "standard"
+  }'
+
+# Get policy templates for common use cases
+curl -X GET "http://localhost:8000/enhanced/policy-templates/lambda-basic"
+curl -X GET "http://localhost:8000/enhanced/policy-templates/s3-read-only"
+
+# Available templates: lambda-basic, lambda-vpc, s3-read-only, s3-full-bucket, ec2-developer, rds-admin
+```
+
+### Standard Analysis Modes
 
 #### 1. Resource-Specific Policy Generation
 Generate policies with specific ARN patterns instead of wildcards:
@@ -507,31 +715,35 @@ This project is proprietary software. All rights reserved. See the [LICENSE](LIC
 
 ## 🚀 Roadmap
 
-**✅ Recently Completed (2025):**
-- ✅ Support for 52 AWS services with 300+ commands
-- ✅ Modern React web interface with shadcn/ui components
-- ✅ FastAPI REST API backend with comprehensive endpoints
-- ✅ Multiple output formats (Terraform, CloudFormation, AWS CLI, JSON, YAML)
-- ✅ Batch processing capabilities with detailed analysis
+**✅ Recently Completed (v2.3.0 - June 2025):**
+- ✅ **Enhanced IAM Features Suite**: Complete enterprise-grade analysis capabilities
+  - ✅ Policy Validation Engine with security scoring (0-100) and AWS compliance
+  - ✅ Cross-Service Dependency Analysis with automatic relationship detection
+  - ✅ Conditional Policy Generation with MFA, IP, time, VPC restrictions
+  - ✅ Compliance Checking for SOC2, PCI, HIPAA, GDPR frameworks
+  - ✅ Security Recommendations with service-specific best practices
+  - ✅ Policy Templates for common enterprise use cases
+- ✅ **One-Click Role Generation**: All formats (JSON, Terraform, CloudFormation, AWS CLI) simultaneously
+- ✅ **Advanced Web Interface**: Enhanced UI with PolicyValidator, CrossServiceDependencies, ConditionalPolicyGenerator
+- ✅ Support for 52 AWS services with 300+ commands covering all major AWS services
+- ✅ Modern React web interface with shadcn/ui components and enhanced features
+- ✅ FastAPI REST API backend with 15 comprehensive endpoints
+- ✅ Multiple output formats with intelligent role generation
 - ✅ Resource-specific ARN generation for enhanced security
-- ✅ Docker containerization with production-ready deployment
-- ✅ Comprehensive test suite with CI/CD integration
-- ✅ **Enhanced Analysis Features**: Resource-specific policies, least privilege optimization, service summaries
-- ✅ **Hot Reload Development Environment**: Full Docker development stack with automatic code reloading
-- ✅ **Advanced Web Interface**: Enhanced batch analyzer with multiple analysis modes
-- ✅ **Complete Enhanced Analysis Implementation**: All advanced endpoints fully functional with real data analysis
+- ✅ Docker containerization with production-ready deployment and hot reload development
+- ✅ Comprehensive test suite with integration testing for all enhanced features
 
-**🚀 Next Phase - Advanced Features:**
-- [ ] **Conditional IAM policies**: Add support for IAM conditions based on command parameters
-- [ ] **Policy validation engine**: Check policies against AWS limits and best practices
-- [ ] **Cross-service dependency analysis**: Auto-include dependent permissions
-- [ ] **Integration with AWS IAM Access Analyzer**: Validate against AWS recommendations
-- [ ] **VS Code extension**: Direct integration into development workflows
-- [ ] **Custom permission mappings**: User-defined service definitions
-- [ ] **Policy optimization**: Merge similar permissions and reduce complexity
-- [ ] **Audit and compliance reports**: Generate security compliance documentation
-- [ ] **Multi-account support**: Enhanced cross-account access patterns
-- [ ] **CloudFormation template generation**: Direct infrastructure-as-code output
+**🚀 Future Enhancements:**
+- [ ] **Additional AWS Services**: IoT, Blockchain, AR/VR, Quantum Computing services
+- [ ] **Advanced Conditions**: More granular policy conditions and restrictions
+- [ ] **Cost Analysis**: Permission cost optimization and resource usage analytics
+- [ ] **Multi-Region Support**: Region-specific resources and permission handling
+- [ ] **VS Code Extension**: Direct integration into development workflows
+- [ ] **CI/CD Integration**: Pipeline integration for automated IAM analysis
+- [ ] **Custom Mappings**: User-defined service definitions and permission mappings
+- [ ] **Audit Capabilities**: Permission usage analysis and optimization recommendations
+- [ ] **Multi-Account Support**: Enhanced cross-account access patterns
+- [ ] **Performance Optimization**: Caching, query optimization, and horizontal scaling
 
 ---
 
