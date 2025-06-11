@@ -14,6 +14,8 @@ from app.models import (
     CrossServiceDependencyResponse,
     ConditionalPolicyRequest,
     ConditionalPolicyResponse,
+    ComplianceRequest,
+    ComplianceResponse,
     ValidationIssueModel
 )
 from iam_generator.enhanced_services import EnhancedIAMService
@@ -436,8 +438,8 @@ async def get_policy_template(use_case: str) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to get policy template: {str(e)}")
 
 
-@router.get("/compliance-check/{framework}")
-async def check_compliance(framework: str, policy: Dict[str, Any]) -> Dict[str, Any]:
+@router.post("/compliance-check/{framework}")
+async def check_compliance(framework: str, request: ComplianceRequest) -> ComplianceResponse:
     """
     Check policy compliance against security frameworks.
     
@@ -497,38 +499,60 @@ async def check_compliance(framework: str, policy: Dict[str, Any]) -> Dict[str, 
                 detail=f"Framework '{framework}' not supported. Available: {available_frameworks}"
             )
         
-        # Simplified compliance checking
-        compliance_result = {
-            'framework': compliance_rules[framework.lower()]['name'],
-            'overall_compliance': 'PARTIAL',
-            'score': 75,  # Placeholder score
-            'checks': [
-                {
-                    'requirement': 'Principle of least privilege',
-                    'status': 'PASS',
-                    'details': 'Policy uses specific actions rather than wildcards'
-                },
-                {
-                    'requirement': 'Multi-factor authentication',
-                    'status': 'FAIL',
-                    'details': 'No MFA conditions found in policy',
-                    'remediation': 'Add MFA conditions for sensitive operations'
-                },
-                {
-                    'requirement': 'Access logging',
-                    'status': 'WARNING',
-                    'details': 'CloudTrail logging should be verified separately'
-                }
-            ],
-            'recommendations': [
-                'Add MFA requirements for administrative actions',
-                'Implement time-based access restrictions',
-                'Add IP address restrictions where appropriate',
-                'Ensure CloudTrail is enabled for audit logging'
-            ]
-        }
         
-        return compliance_result
+        # Get the framework rules
+        framework_key = framework.lower()
+        framework_rules = compliance_rules[framework_key]
+        
+        # Analyze the policy (simplified implementation)
+        policy = request.policy
+        passed_checks = []
+        failed_checks = []
+        recommendations = []
+        
+        # Basic compliance checks
+        statements = policy.get('Statement', [])
+        if isinstance(statements, dict):
+            statements = [statements]
+        
+        # Check for least privilege
+        has_wildcards = any('*' in str(stmt.get('Action', '')) for stmt in statements)
+        if not has_wildcards:
+            passed_checks.append('Uses specific actions (least privilege)')
+        else:
+            failed_checks.append('Contains wildcard actions')
+            recommendations.append('Replace wildcard actions with specific permissions')
+        
+        # Check for MFA conditions
+        has_mfa = any('aws:MultiFactorAuthPresent' in str(stmt.get('Condition', {})) for stmt in statements)
+        if has_mfa:
+            passed_checks.append('Multi-factor authentication required')
+        else:
+            failed_checks.append('No MFA requirements found')
+            recommendations.append('Add MFA conditions for sensitive operations')
+        
+        # Check for secure transport
+        has_secure_transport = any('aws:SecureTransport' in str(stmt.get('Condition', {})) for stmt in statements)
+        if has_secure_transport:
+            passed_checks.append('Secure transport enforced')
+        else:
+            failed_checks.append('No secure transport enforcement')
+            recommendations.append('Add secure transport (HTTPS) requirements')
+        
+        # Calculate compliance score
+        total_checks = len(passed_checks) + len(failed_checks)
+        score = int((len(passed_checks) / max(total_checks, 1)) * 100) if total_checks > 0 else 0
+        compliant = len(failed_checks) == 0
+        
+        return ComplianceResponse(
+            framework=framework_rules['name'],
+            compliant=compliant,
+            score=score,
+            passed_checks=passed_checks,
+            failed_checks=failed_checks,
+            recommendations=recommendations,
+            requirements=framework_rules['requirements']
+        )
         
     except HTTPException:
         raise

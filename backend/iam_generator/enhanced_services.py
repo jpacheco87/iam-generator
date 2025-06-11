@@ -330,14 +330,21 @@ class EnhancedIAMService:
             enhanced_statements.append(statement)
         
         # Add security enhancements
-        if 'mfa_required' in conditions and conditions['mfa_required']:
+        if conditions.get('require_mfa'):
             security_enhancements.append("Multi-factor authentication required for sensitive actions")
         
-        if 'ip_restriction' in conditions:
-            security_enhancements.append(f"Access restricted to IP addresses: {conditions['ip_restriction']}")
+        if conditions.get('ip_restrictions'):
+            security_enhancements.append(f"Access restricted to IP addresses: {conditions['ip_restrictions']}")
         
-        if 'time_restriction' in conditions:
-            security_enhancements.append("Time-based access restrictions applied")
+        if conditions.get('time_restrictions'):
+            time_restr = conditions['time_restrictions']
+            security_enhancements.append(f"Time-based access restrictions: {time_restr.get('start_time', '00:00')} - {time_restr.get('end_time', '23:59')} {time_restr.get('timezone', 'UTC')}")
+        
+        if conditions.get('vpc_restrictions'):
+            security_enhancements.append(f"VPC access restrictions: {conditions['vpc_restrictions']}")
+        
+        if conditions.get('require_secure_transport'):
+            security_enhancements.append("Secure transport (HTTPS/TLS) required for all data operations")
         
         policy_document = {
             'Version': '2012-10-17',
@@ -490,21 +497,33 @@ class EnhancedIAMService:
         applicable = {}
         
         # Check if action is sensitive and should require MFA
-        if conditions.get('mfa_required') and self._is_sensitive_action(action):
+        if conditions.get('require_mfa') and self._is_sensitive_action(action):
             applicable.update(self.security_conditions['mfa_required'])
         
         # Apply IP restrictions if specified
-        if conditions.get('ip_restriction'):
+        if conditions.get('ip_restrictions'):
             ip_condition = self.security_conditions['ip_restriction'].copy()
-            ip_condition['IpAddress']['aws:SourceIp'] = conditions['ip_restriction']
+            ip_condition['IpAddress']['aws:SourceIp'] = conditions['ip_restrictions']
             applicable.update(ip_condition)
         
         # Apply time restrictions if specified
-        if conditions.get('time_restriction'):
+        if conditions.get('time_restrictions'):
+            time_restr = conditions['time_restrictions']
             time_condition = self.security_conditions['time_restriction'].copy()
-            time_condition['DateGreaterThan']['aws:CurrentTime'] = conditions['time_restriction']['start']
-            time_condition['DateLessThan']['aws:CurrentTime'] = conditions['time_restriction']['end']
+            
+            # Convert time format if needed
+            start_time = f"{time_restr.get('start_time', '00:00')}:00Z"
+            end_time = f"{time_restr.get('end_time', '23:59')}:59Z"
+            
+            time_condition['DateGreaterThan']['aws:CurrentTime'] = start_time
+            time_condition['DateLessThan']['aws:CurrentTime'] = end_time
             applicable.update(time_condition)
+        
+        # Apply VPC restrictions if specified
+        if conditions.get('vpc_restrictions'):
+            vpc_condition = self.security_conditions['vpc_endpoint'].copy()
+            vpc_condition['StringEquals']['aws:SourceVpc'] = conditions['vpc_restrictions']
+            applicable.update(vpc_condition)
         
         # Always require secure transport for data operations
         if any(data_action in action.lower() for data_action in ['put', 'upload', 'create', 'delete']):

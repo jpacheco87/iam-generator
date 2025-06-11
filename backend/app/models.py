@@ -184,3 +184,21 @@ class ConditionalPolicyResponse(BaseModel):
     conditions_applied: List[str]
     security_enhancements: List[str]
     metadata: Dict[str, Any]
+
+
+class ComplianceRequest(BaseModel):
+    """Request model for compliance checking."""
+    policy: Dict[str, Any]
+    account_id: Optional[str] = None
+    region: Optional[str] = None
+
+
+class ComplianceResponse(BaseModel):
+    """Response model for compliance checking."""
+    framework: str
+    compliant: bool
+    score: int  # 0-100
+    passed_checks: List[str]
+    failed_checks: List[str]
+    recommendations: List[str]
+    requirements: List[str]
